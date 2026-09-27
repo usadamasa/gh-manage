@@ -1,0 +1,6 @@
+# repository は visibility だけ base と違う｡rulesets は base のまま
+repository:
+  visibility: private
+secrets:
+  COPILOT_GITHUB_TOKEN:
+    from_env: COPILOT_GITHUB_TOKEN
