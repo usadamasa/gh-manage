@@ -98,3 +98,18 @@ func (c *Client) rulesetIDs(ctx context.Context, prefix string) (map[string]int6
 	}
 	return ids, nil
 }
+
+// CreateVariable creates the Actions variable name.
+func (c *Client) CreateVariable(ctx context.Context, owner, repo, name, value string) error {
+	return c.send(ctx, http.MethodPost, "repos/"+owner+"/"+repo+"/actions/variables", map[string]string{"name": name, "value": value})
+}
+
+// UpdateVariable replaces the value of the Actions variable name.
+func (c *Client) UpdateVariable(ctx context.Context, owner, repo, name, value string) error {
+	return c.send(ctx, http.MethodPatch, "repos/"+owner+"/"+repo+"/actions/variables/"+name, map[string]string{"name": name, "value": value})
+}
+
+// DeleteVariable deletes the Actions variable name.
+func (c *Client) DeleteVariable(ctx context.Context, owner, repo, name string) error {
+	return c.send(ctx, http.MethodDelete, "repos/"+owner+"/"+repo+"/actions/variables/"+name, nil)
+}

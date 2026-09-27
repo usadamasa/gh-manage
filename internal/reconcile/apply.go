@@ -19,16 +19,31 @@ const (
 	ActSetTopics        ActionOp = "set_topics"
 	ActUpsertRuleset    ActionOp = "upsert_ruleset"
 	ActDeleteRuleset    ActionOp = "delete_ruleset"
+	ActCreateVariable   ActionOp = "create_variable"
+	ActUpdateVariable   ActionOp = "update_variable"
+	ActDeleteVariable   ActionOp = "delete_variable"
+	ActPutSecret        ActionOp = "put_secret"
+	ActDeleteSecret     ActionOp = "delete_secret"
+)
+
+// Kinds of secrets, as they appear in Change.Kind and Action.Kind.
+const (
+	KindSecret           = "secret"
+	KindDependabotSecret = "dependabot_secret" // #nosec G101 -- 種類の名前で､資格情報ではない
 )
 
 // Action is one write to GitHub. 使うフィールドは Op で決まる｡
+// secret の値は持たない｡cli が Secret.FromEnv の環境変数から読む｡
 type Action struct {
 	Op         ActionOp
 	Repository config.Repository // ActCreateRepository
 	Fields     map[string]any    // ActUpdateRepository
 	Topics     []string          // ActSetTopics
-	Name       string            // ActUpsertRuleset / ActDeleteRuleset
+	Name       string            // ruleset, variable and secret actions
 	Ruleset    config.Ruleset    // ActUpsertRuleset
+	Value      string            // ActCreateVariable / ActUpdateVariable
+	Kind       string            // ActPutSecret / ActDeleteSecret: KindSecret or KindDependabotSecret
+	Secret     config.Secret     // ActPutSecret
 }
 
 // CheckPublish rejects plans that turn a private repository public.
@@ -45,10 +60,11 @@ func CheckPublish(plans []RepoPlan) error {
 	return errors.Join(errs...)
 }
 
-// Actions turns the repository, topics and ruleset changes of p into writes, in order.
+// Actions turns the changes of p into writes, in order.
 // desired は p を作ったときの宣言で､ruleset は宣言全体を書き込む｡
+// secret は値の差分が見えないので､宣言したものを差分の有無にかかわらず毎回書き直す｡
 func Actions(p RepoPlan, desired *config.Settings) ([]Action, error) {
-	if p.Skipped || !p.HasChanges() {
+	if p.Skipped {
 		return nil, nil
 	}
 	if len(p.Changes) == 1 && p.Changes[0].Kind == "repository" && p.Changes[0].Op == OpCreate {
@@ -77,7 +93,10 @@ func Actions(p RepoPlan, desired *config.Settings) ([]Action, error) {
 	if topics {
 		acts = append(acts, Action{Op: ActSetTopics, Topics: desired.Topics})
 	}
-	return append(acts, rulesetActions(desired, upserts, deletes)...), nil
+	acts = append(acts, rulesetActions(desired, upserts, deletes)...)
+	acts = append(acts, variableActions(p.Changes, desired.Variables)...)
+	acts = append(acts, secretActions(KindSecret, p.Changes, desired.Secrets)...)
+	return append(acts, secretActions(KindDependabotSecret, p.Changes, desired.DependabotSecrets)...), nil
 }
 
 // createActions makes the repository and then writes every declared setting.
@@ -93,7 +112,12 @@ func createActions(desired *config.Settings) ([]Action, error) {
 	if desired.Topics != nil {
 		acts = append(acts, Action{Op: ActSetTopics, Topics: desired.Topics})
 	}
-	return append(acts, rulesetActions(desired, sortedKeys(desired.Rulesets), nil)...), nil
+	acts = append(acts, rulesetActions(desired, sortedKeys(desired.Rulesets), nil)...)
+	for _, name := range sortedKeys(desired.Variables) {
+		acts = append(acts, Action{Op: ActCreateVariable, Name: name, Value: desired.Variables[name]})
+	}
+	acts = append(acts, secretActions(KindSecret, nil, desired.Secrets)...)
+	return append(acts, secretActions(KindDependabotSecret, nil, desired.DependabotSecrets)...), nil
 }
 
 func rulesetActions(desired *config.Settings, upserts, deletes []string) []Action {
@@ -103,6 +127,33 @@ func rulesetActions(desired *config.Settings, upserts, deletes []string) []Actio
 	}
 	for _, name := range deletes {
 		acts = append(acts, Action{Op: ActDeleteRuleset, Name: name})
+	}
+	return acts
+}
+
+// variableOps maps the Op of a variable Change to its write.
+var variableOps = map[Op]ActionOp{OpCreate: ActCreateVariable, OpUpdate: ActUpdateVariable, OpDelete: ActDeleteVariable}
+
+func variableActions(changes []Change, desired map[string]string) []Action {
+	var acts []Action
+	for _, c := range changes {
+		if c.Kind == "variable" {
+			acts = append(acts, Action{Op: variableOps[c.Op], Name: c.Name, Value: desired[c.Name]})
+		}
+	}
+	return acts
+}
+
+// secretActions puts every declared secret of kind and then deletes the ones the plan prunes.
+func secretActions(kind string, changes []Change, desired config.Secrets) []Action {
+	var acts []Action
+	for _, name := range sortedKeys(desired) {
+		acts = append(acts, Action{Op: ActPutSecret, Kind: kind, Name: name, Secret: desired[name]})
+	}
+	for _, c := range changes {
+		if c.Kind == kind && c.Op == OpDelete {
+			acts = append(acts, Action{Op: ActDeleteSecret, Kind: kind, Name: c.Name})
+		}
 	}
 	return acts
 }

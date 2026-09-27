@@ -59,17 +59,47 @@ func TestWrites(t *testing.T) {
 			do:   func(c *Client) error { return c.DeleteRuleset(context.Background(), "o", "r", "main") },
 			want: []string{`DELETE repos/o/r/rulesets/7`},
 		},
+		{
+			name: "CreateVariable は POST",
+			do:   func(c *Client) error { return c.CreateVariable(context.Background(), "o", "r", "GO", "1.27") },
+			want: []string{`POST repos/o/r/actions/variables {"name":"GO","value":"1.27"}`},
+		},
+		{
+			name: "UpdateVariable は名前の URL に PATCH",
+			do:   func(c *Client) error { return c.UpdateVariable(context.Background(), "o", "r", "GO", "1.27") },
+			want: []string{`PATCH repos/o/r/actions/variables/GO {"name":"GO","value":"1.27"}`},
+		},
+		{
+			name: "DeleteVariable は DELETE",
+			do:   func(c *Client) error { return c.DeleteVariable(context.Background(), "o", "r", "GO") },
+			want: []string{`DELETE repos/o/r/actions/variables/GO`},
+		},
+		{
+			name: "DeleteSecret は actions の secret を DELETE",
+			do:   func(c *Client) error { return c.DeleteSecret(context.Background(), "o", "r", SecretsActions, "TOKEN") },
+			want: []string{`DELETE repos/o/r/actions/secrets/TOKEN`},
+		},
+		{
+			name: "DeleteSecret は dependabot の secret を DELETE",
+			do:   func(c *Client) error { return c.DeleteSecret(context.Background(), "o", "r", SecretsDependabot, "NPM") },
+			want: []string{`DELETE repos/o/r/dependabot/secrets/NPM`},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c, ft := newTestClient(t, map[string]fakeResponse{
-				"GET repos/o/r/rulesets?per_page=100": rulesetList,
-				"PATCH repos/o/r":                     {body: `{}`},
-				"POST user/repos":                     {status: http.StatusCreated, body: `{}`},
-				"PUT repos/o/r/topics":                {body: `{}`},
-				"PUT repos/o/r/rulesets/7":            {body: `{}`},
-				"POST repos/o/r/rulesets":             {status: http.StatusCreated, body: `{}`},
-				"DELETE repos/o/r/rulesets/7":         {status: http.StatusNoContent},
+				"GET repos/o/r/rulesets?per_page=100":     rulesetList,
+				"PATCH repos/o/r":                         {body: `{}`},
+				"POST user/repos":                         {status: http.StatusCreated, body: `{}`},
+				"PUT repos/o/r/topics":                    {body: `{}`},
+				"PUT repos/o/r/rulesets/7":                {body: `{}`},
+				"POST repos/o/r/rulesets":                 {status: http.StatusCreated, body: `{}`},
+				"DELETE repos/o/r/rulesets/7":             {status: http.StatusNoContent},
+				"POST repos/o/r/actions/variables":        {status: http.StatusCreated, body: `{}`},
+				"PATCH repos/o/r/actions/variables/GO":    {status: http.StatusNoContent},
+				"DELETE repos/o/r/actions/variables/GO":   {status: http.StatusNoContent},
+				"DELETE repos/o/r/actions/secrets/TOKEN":  {status: http.StatusNoContent},
+				"DELETE repos/o/r/dependabot/secrets/NPM": {status: http.StatusNoContent},
 			})
 			if err := tt.do(c); err != nil {
 				t.Fatalf("error = %v", err)

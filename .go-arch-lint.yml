@@ -38,6 +38,8 @@ vendors:
     in:
       - github.com/cli/go-gh/v2/pkg/api
       - github.com/cli/go-gh/v2/pkg/auth
+  nacl:
+    in: golang.org/x/crypto/nacl/box
 
 commonComponents:
   - shared
@@ -60,3 +62,4 @@ deps:
       - domain
     canUse:
       - gogh
+      - nacl  # secret の封緘
