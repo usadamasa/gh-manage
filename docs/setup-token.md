@@ -1,8 +1,8 @@
 # fine-grained PAT の作り方
 
 gh-manage は fine-grained personal access token (PAT) 1 本で動く｡GitHub App は要らない｡
-リポジトリの作成 (`POST /user/repos`) は fine-grained PAT の "Repository creation" 権限で呼べることを
-GitHub Docs (fine-grained PAT の権限表) で確認している｡GitHub App の installation token での作成は
+リポジトリの作成 (`POST /user/repos`) も fine-grained PAT で呼べる｡作成の権限は独立した項目ではなく
+Administration に含まれる (作成画面の説明は "Repository creation, deletion, settings, teams, and collaborators"､2026-09 に確認)｡GitHub App の installation token での作成は
 評価していない｡
 
 ## 作成手順
@@ -20,12 +20,11 @@ Repository permissions は次のとおり付ける｡
 
 | Permission | Access | 使う場所 |
 | --- | --- | --- |
-| Administration | Read and write | 一般設定の PATCH､ruleset の作成と更新 |
+| Administration | Read and write | リポジトリの作成 (`POST /user/repos`)､一般設定の PATCH､ruleset の作成と更新 |
 | Metadata | Read-only | (自動で付く) |
 | Secrets | Read and write | Actions の secret |
 | Variables | Read and write | Actions の variable |
 | Dependabot secrets | Read and write | Dependabot の secret |
-| Repository creation | Read and write | `POST /user/repos` (付けなくても作成以外の操作は動く) |
 
 Generate token を押し､値を控える (再表示できない)｡
 
@@ -62,3 +61,16 @@ gh secret set GH_MANAGE_TOKEN --repo usadamasa/gh-manage
 
 配布する secret の名前を settings に足したら､同じ名前で gh-manage の Actions secret にも値を置く｡
 workflow は secret を同名の環境変数として gh-manage に渡す｡
+
+workflow は `.github/workflows/settings.yaml`｡
+
+| トリガー | job | 使う secret |
+| --- | --- | --- |
+| `settings/**` を変える PR | Plan: plan を job summary と PR コメント (1 件を上書き) に出す｡差分 (exit 2) は成功扱い | `GH_MANAGE_TOKEN` |
+| main への push | Apply: `apply --yes` | `GH_MANAGE_TOKEN` と配布する secret |
+| 毎週月曜 09:00 JST と手動実行 | Drift: plan｡差分 (exit 2) があれば失敗する | `GH_MANAGE_TOKEN` |
+
+- `settings/base.yaml` が無い間 (bootstrap 前) は､どの job も何もせずに成功する
+- fork からの PR には secret が渡らないので Plan を走らせない
+- PR コメントは workflow の `GITHUB_TOKEN` で書く (PAT は使わない)
+- 配布する secret を足したら､workflow の Apply の `env` にも同じ名前で足す
