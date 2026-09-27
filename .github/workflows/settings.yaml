@@ -110,7 +110,6 @@ jobs:
           TAGPR_CLIENT_ID: ${{ vars.TAGPR_CLIENT_ID }}
           # 配布する secret の値｡settings の from_env と同じ名前で渡す
           TAGPR_PRIVATE_KEY: ${{ secrets.TAGPR_PRIVATE_KEY }}
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
         run: |
           if [ ! -f settings/base.yaml ]; then
             echo "settings/base.yaml が無いので apply しない" | tee -a "$GITHUB_STEP_SUMMARY"

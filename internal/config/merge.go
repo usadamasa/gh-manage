@@ -16,7 +16,8 @@ import (
 //
 // yaml.Node のまま merge するので scalar の書き方 (1.10 や "0755") は変わらない｡
 // キーの順序は base の順で､overlay にだけあるキーは後ろに足す｡
-// 結果に null は残らない｡base と overlay は変更しない｡nil は空の map として扱う｡
+// map の null は結果に残らない (list の要素の中の null は値として残す)｡
+// base と overlay は変更しない｡nil は空の map として扱う｡
 func merge(base, overlay *yaml.Node) *yaml.Node {
 	var keys []*yaml.Node
 	values := map[string]*yaml.Node{}
@@ -67,25 +68,32 @@ func pairs(n *yaml.Node) func(yield func(k, v *yaml.Node) bool) {
 }
 
 // cloneNode deep-copies n, dropping null entries of maps and resolving aliases.
+// list は丸ごと置き換えるので､要素の中の null は削除の指示でなく値として copyNode で残す｡
 func cloneNode(n *yaml.Node) *yaml.Node {
 	switch n.Kind {
 	case yaml.MappingNode:
 		return merge(n, nil)
 	case yaml.AliasNode:
 		return cloneNode(n.Alias)
-	case yaml.SequenceNode:
-		out := *n
-		out.Anchor = ""
+	default:
+		return copyNode(n)
+	}
+}
+
+// copyNode deep-copies n as is, resolving aliases.
+func copyNode(n *yaml.Node) *yaml.Node {
+	if n.Kind == yaml.AliasNode {
+		return copyNode(n.Alias)
+	}
+	out := *n
+	out.Anchor = ""
+	if n.Content != nil {
 		out.Content = make([]*yaml.Node, len(n.Content))
 		for i, e := range n.Content {
-			out.Content[i] = cloneNode(e)
+			out.Content[i] = copyNode(e)
 		}
-		return &out
-	default:
-		out := *n
-		out.Anchor = ""
-		return &out
 	}
+	return &out
 }
 
 func isNull(n *yaml.Node) bool {

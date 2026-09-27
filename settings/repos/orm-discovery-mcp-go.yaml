@@ -1,0 +1,3 @@
+# repository は visibility だけ base と違う｡rulesets は base のまま
+repository:
+  visibility: private

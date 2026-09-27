@@ -53,7 +53,6 @@ gh-manage リポジトリの Actions secret に置く｡
 | --- | --- |
 | `GH_MANAGE_TOKEN` | 上で作った fine-grained PAT |
 | `TAGPR_PRIVATE_KEY` | 配布する secret の値 (settings の `from_env: TAGPR_PRIVATE_KEY` が参照する) |
-| `COPILOT_GITHUB_TOKEN` | 配布する secret の値 (settings の `from_env: COPILOT_GITHUB_TOKEN` が参照する) |
 
 ```bash
 gh secret set GH_MANAGE_TOKEN --repo usadamasa/gh-manage

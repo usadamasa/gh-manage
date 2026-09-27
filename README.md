@@ -27,6 +27,7 @@ overlay は base に deep merge する｡
 - map は再帰的に merge する
 - `null` を書くと base のキーを削除する (`secrets: {FOO: null}` で base の secret FOO を外す)
 - list は丸ごと置き換える｡ruleset の `rules` に 1 つ足すときも､overlay で list 全体を書き直す
+- list の要素の中の `null` は削除でなく値として残す (`code_coverage` の `minimum_coverage: null` など)
 - `prune` も同じ規則で解決する｡既定は false で､base → overlay の順に上書きする
 
 schema に無いキーはエラーにする (typo を apply の前に止める)｡`repository.name` は rename を防ぐため受け付けない｡
@@ -72,9 +73,6 @@ dependabot_secrets:         # Dependabot の secret｡書き方は secrets と�
 # settings/repos/agents-config.yaml
 repository:
   visibility: private
-secrets:
-  COPILOT_GITHUB_TOKEN:
-    from_env: COPILOT_GITHUB_TOKEN
 ```
 
 ## インストール
