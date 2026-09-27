@@ -15,6 +15,13 @@ type Repo struct {
 	Fork     bool   `json:"fork"`
 }
 
+// rulesetSummary is an entry of GET /repos/{owner}/{repo}/rulesets.
+type rulesetSummary struct {
+	ID         int64  `json:"id"`
+	Name       string `json:"name"`
+	SourceType string `json:"source_type"`
+}
+
 // CurrentUser returns the login of the token's owner.
 func (c *Client) CurrentUser(ctx context.Context) (string, error) {
 	var u struct {
@@ -70,12 +77,7 @@ func (c *Client) readRepository(ctx context.Context, prefix string, s *config.Se
 }
 
 func (c *Client) readRulesets(ctx context.Context, prefix string, s *config.Settings) error {
-	type summary struct {
-		ID         int64  `json:"id"`
-		Name       string `json:"name"`
-		SourceType string `json:"source_type"`
-	}
-	list, err := getList[summary](ctx, c, prefix+"/rulesets?per_page=100")
+	list, err := getList[rulesetSummary](ctx, c, prefix+"/rulesets?per_page=100")
 	if err != nil {
 		return err
 	}

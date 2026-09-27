@@ -23,10 +23,19 @@ type fakeResponse struct {
 type fakeTransport struct {
 	responses map[string]fakeResponse
 	requests  []*http.Request
+	// calls records "METHOD path body" of every request other than GET.
+	calls []string
 }
 
 func (f *fakeTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	f.requests = append(f.requests, req)
+	if req.Method != http.MethodGet {
+		var body []byte
+		if req.Body != nil {
+			body, _ = io.ReadAll(req.Body)
+		}
+		f.calls = append(f.calls, strings.TrimSpace(req.Method+" "+strings.TrimPrefix(req.URL.Path, "/")+" "+string(body)))
+	}
 	key := req.Method + " " + strings.TrimPrefix(req.URL.Path, "/")
 	if req.URL.RawQuery != "" {
 		key += "?" + req.URL.RawQuery

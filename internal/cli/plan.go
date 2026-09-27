@@ -52,10 +52,11 @@ Exit code: 0 = no difference, 2 = differences found, 1 = error.`,
 			if err != nil {
 				return err
 			}
-			plans, err := buildPlans(cmd.Context(), cfg, client)
+			planned, err := buildPlans(cmd.Context(), cfg, client)
 			if err != nil {
 				return err
 			}
+			plans := planned.plans()
 			if err := write(cmd, plans); err != nil {
 				return err
 			}
@@ -71,40 +72,61 @@ Exit code: 0 = no difference, 2 = differences found, 1 = error.`,
 	return cmd
 }
 
+// planned is the plans of every managed repository with what they were planned from.
+type planned struct {
+	owner   string
+	entries []plannedRepo
+}
+
+type plannedRepo struct {
+	plan    reconcile.RepoPlan
+	desired *config.Settings
+}
+
+func (p planned) plans() []reconcile.RepoPlan {
+	out := make([]reconcile.RepoPlan, len(p.entries))
+	for i, e := range p.entries {
+		out[i] = e.plan
+	}
+	return out
+}
+
 // buildPlans plans every repository that has settings/repos/<name>.yaml.
-func buildPlans(ctx context.Context, cfg *config.Config, client *github.Client) ([]reconcile.RepoPlan, error) {
+func buildPlans(ctx context.Context, cfg *config.Config, client *github.Client) (planned, error) {
 	owner, err := client.CurrentUser(ctx)
 	if err != nil {
-		return nil, err
+		return planned{}, err
 	}
 	repos, err := client.ListOwnedRepos(ctx)
 	if err != nil {
-		return nil, err
+		return planned{}, err
 	}
 	owned := make(map[string]github.Repo, len(repos))
 	for _, r := range repos {
 		owned[r.Name] = r
 	}
 
-	plans := make([]reconcile.RepoPlan, 0, len(cfg.Names()))
+	out := planned{owner: owner}
 	for _, name := range cfg.Names() {
 		desired, err := cfg.Render(name)
 		if err != nil {
-			return nil, err
+			return planned{}, err
 		}
+		var p reconcile.RepoPlan
 		repo, exists := owned[name]
 		switch {
 		case !exists:
-			plans = append(plans, reconcile.Plan(name, desired, nil))
+			p = reconcile.Plan(name, desired, nil)
 		case repo.Archived:
-			plans = append(plans, reconcile.Skip(name, "archived なので skip"))
+			p = reconcile.Skip(name, "archived なので skip")
 		default:
 			live, err := client.FetchSettings(ctx, owner, name)
 			if err != nil {
-				return nil, err
+				return planned{}, err
 			}
-			plans = append(plans, reconcile.Plan(name, desired, live))
+			p = reconcile.Plan(name, desired, live)
 		}
+		out.entries = append(out.entries, plannedRepo{plan: p, desired: desired})
 	}
-	return plans, nil
+	return out, nil
 }
