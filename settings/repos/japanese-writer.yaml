@@ -1,0 +1,7 @@
+# repository と rulesets は base のまま｡ruleset の allowed_merge_methods と do_not_enforce_on_create は base に合わせる (bootstrap の drift 修正)
+variables:
+  TAGPR_CLIENT_ID:
+    from_env: TAGPR_CLIENT_ID
+secrets:
+  TAGPR_PRIVATE_KEY:
+    from_env: TAGPR_PRIVATE_KEY
