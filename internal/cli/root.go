@@ -36,6 +36,7 @@ computes the difference, and applies only what changed.`,
 	root.AddCommand(newRenderCmd(&settingsDir))
 	root.AddCommand(newSnapshotCmd(&settingsDir, newClient))
 	root.AddCommand(newPlanCmd(&settingsDir, newClient))
+	root.AddCommand(newApplyCmd(&settingsDir, newClient))
 	return root
 }
 

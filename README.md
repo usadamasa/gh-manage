@@ -87,7 +87,7 @@ go install github.com/usadamasa/gh-manage/cmd/gh-manage@latest
 | --- | --- |
 | `gh-manage render [name]` | base と overlay を合成した desired state を表示する｡name を省くと全リポジトリを名前の順に出す |
 | `gh-manage plan [--format text\|json]` | live を読んで差分を出す｡exit 0 = 差分なし､2 = 差分あり､1 = エラー |
-| `gh-manage apply [--yes]` | plan の結果を適用する |
+| `gh-manage apply [--yes] [--allow-publish]` | plan を表示し､確認のうえ適用する｡`--yes` で確認を省く (CI 用) |
 | `gh-manage snapshot [--repo name] [--minimize]` | live を `settings/repos/<name>.yaml` に書き出す (管理下に入れるとき)｡既存のファイルは上書きする |
 
 ### snapshot
@@ -96,6 +96,13 @@ go install github.com/usadamasa/gh-manage/cmd/gh-manage@latest
 - `--minimize` は base.yaml との差分だけを残す｡base にあって live に無いものは `null` で書くので､render すると live と同じになる
 - secret は値を読めないので名前だけ書き､`from_env` に同じ名前を入れる
 - 最後に rate limit の残り (`X-RateLimit-Remaining`) を stderr に出す
+
+### apply
+
+- repository は変わったキーだけを `PATCH` する｡宣言していないキーは送らない
+- ruleset は名前で探して､あれば `PUT`､無ければ `POST` で宣言全体を書く｡削除は `prune.rulesets` のときだけ
+- 宣言があって GitHub に無いリポジトリは `POST /user/repos` (`auto_init: true`) で作り､続けて宣言した設定をすべて入れる
+- private を public にする変更が 1 件でもあれば､`--allow-publish` が無い限り何も書き込まずに止める
 
 ### 差分の見方
 
