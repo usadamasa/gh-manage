@@ -19,9 +19,9 @@ runs:
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.local/share/aquaproj-aqua
-        key: ${{ runner.os }}-aqua-${{ hashFiles('aqua.yaml') }}-${{ hashFiles('aqua/registry.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-aqua-
+        # go_install のパッケージはビルドした Go に依存するので go.mod もキーに含める｡
+        # 前方一致の restore-keys は古い Go でビルドしたバイナリを戻してしまうので置かない｡
+        key: ${{ runner.os }}-aqua-${{ hashFiles('aqua.yaml') }}-${{ hashFiles('aqua/registry.yaml') }}-${{ hashFiles('go.mod') }}
 
     - name: Install tools with Aqua
       run: aqua install

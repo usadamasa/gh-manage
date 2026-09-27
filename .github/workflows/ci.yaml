@@ -48,11 +48,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: ./.github/actions/setup-aqua
-
+      # aqua の go_install パッケージ (govulncheck など) は手元の Go でビルドされる｡
+      # 古い Go でビルドすると go.mod より新しい言語バージョンを読めないので､先に setup-go する｡
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
+
+      - uses: ./.github/actions/setup-aqua
 
       - name: Check formatting
         run: |
