@@ -1,0 +1,36 @@
+# Binary (ルート直下だけ｡cmd/gh-manage/ はソース)
+bin/
+/gh-manage
+
+# Go
+*.test
+*.out
+go.work
+go.work.sum
+
+# Coverage
+coverage.*
+
+# Working area (Claude Code)
+PLAN.md
+tmp/
+
+# render の出力
+rendered/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# direnv
+.envrc.local
+
+# Debug
+__debug_bin*

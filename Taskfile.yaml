@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  BINARY_NAME: gh-manage
+  MAIN_PKG: ./cmd/gh-manage
+
+env:
+  # ローカルレジストリ (aqua/registry.yaml) のパッケージを許可する｡CI は direnv を通らない｡
+  AQUA_POLICY_CONFIG: '{{.TASKFILE_DIR}}/aqua/policy.yaml'
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  build:
+    desc: Build the binary
+    cmds:
+      - go build -o bin/{{.BINARY_NAME}} {{.MAIN_PKG}}
+
+  test:
+    desc: Run tests with race detection and coverage
+    cmds:
+      - go test -race -cover ./...
+
+  lint:
+    desc: Run linters and architecture metrics
+    cmds:
+      - yamllint -c .yamllint.yaml .
+      - golangci-lint run --timeout 5m ./...
+      - go-arch-lint check
+      - analyze-arch-lint --strict .
+      - analyze-modularity --strict .
+      - govulncheck ./...
+      - gosec -quiet ./...
+
+  metrics:
+    desc: Print package metrics (Ca/Ce/A/I/D)
+    cmds:
+      - spm-go all
+
+  pin:
+    desc: Pin GitHub Actions in workflows to commit SHAs
+    cmds:
+      - pinact run
+
+  format:
+    desc: Format code
+    cmds:
+      - go mod tidy
+      - goimports -w .
+      - go fmt ./...
+
+  dev:
+    desc: Format, lint, and test (development cycle)
+    cmds:
+      - task: format
+      - task: lint
+      - task: test
+
+  ci:
+    desc: Run full CI checks (format, lint, test, build)
+    cmds:
+      - task: format
+      - task: lint
+      - task: test
+      - task: build
+
+  clean:
+    desc: Remove build artifacts
+    cmds:
+      - rm -rf bin/ coverage.*

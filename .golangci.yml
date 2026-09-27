@@ -1,0 +1,100 @@
+# golangci-lint v2 設定｡
+# アーキテクチャメトリクス (go-arch-metrics:setup) の linter と、go-template の forbidigo を合わせる｡
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    # --- テスト可能性メトリクス ---
+    - gocognit   # 認知的複雑度
+    - gocyclo    # 循環複雑度 (McCabe)
+    - cyclop     # 循環複雑度 (パッケージ全体も対象)
+    - funlen     # 関数の長さ
+    - nestif     # ネストの深さ
+    # --- 保守性メトリクス ---
+    - maintidx   # 保守性指数
+    # --- 静的解析 ---
+    - staticcheck
+    - errcheck
+    - govet
+    - ineffassign
+    - unused
+    # --- 依存管理 ---
+    - depguard
+    # --- 出力経路の統一 ---
+    - forbidigo
+
+  settings:
+    gocognit:
+      min-complexity: 20
+
+    gocyclo:
+      min-complexity: 20
+
+    cyclop:
+      max-complexity: 20
+
+    funlen:
+      lines: 100
+      statements: 60
+
+    nestif:
+      min-complexity: 5
+
+    maintidx:
+      under: 20
+
+    depguard:
+      rules:
+        # GitHub API の呼び出しは internal/github に閉じる (後続 step で使う)
+        no-direct-github-client:
+          files:
+            - "!**/internal/github/**"
+            - "!**/*_test.go"
+          deny:
+            - pkg: "github.com/cli/go-gh/v2/pkg/api"
+              desc: "GitHub API は internal/github 経由で呼ぶ"
+
+    forbidigo:
+      forbid:
+        - pattern: '^fmt\.Print.*$'
+          msg: "use internal/log.Logger instead of fmt.Print* for console output"
+        - pattern: '^fmt\.Fprint.*\(os\.Stdout'
+          msg: "use internal/log.Logger instead of fmt.Fprint* to os.Stdout"
+      analyze-types: true
+      exclude-godoc-examples: true
+
+  exclusions:
+    paths:
+      - vendor
+      - ".*\\.pb\\.go$"
+      - ".*_gen\\.go$"
+    rules:
+      # テーブル駆動テストは複雑度・長さ・保守性指数がどうしても悪化する
+      - path: "_test\\.go"
+        linters:
+          - cyclop
+          - funlen
+          - gocognit
+          - gocyclo
+          - nestif
+          - maintidx
+          - forbidigo
+      # CLI の入口と log 実装は fmt.Print* を直接使う
+      - path: cmd/
+        linters:
+          - forbidigo
+      - path: internal/cli/
+        linters:
+          - forbidigo
+      - path: internal/log/
+        linters:
+          - forbidigo
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+run:
+  timeout: 5m
