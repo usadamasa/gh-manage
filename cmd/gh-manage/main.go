@@ -18,8 +18,11 @@ var (
 
 func main() {
 	info := version.Resolve(buildVersion, buildCommit, buildDate)
-	if err := cli.Execute(info.DisplayString()); err != nil {
+	err := cli.Execute(info.DisplayString())
+	code := cli.ExitCode(err)
+	// exit 2 (plan の差分あり) は結果そのものなのでメッセージを出さない
+	if code == 1 {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
 	}
+	os.Exit(code)
 }

@@ -35,6 +35,7 @@ computes the difference, and applies only what changed.`,
 	root.PersistentFlags().StringVar(&settingsDir, "settings", "settings", "directory that holds base.yaml and repos/")
 	root.AddCommand(newRenderCmd(&settingsDir))
 	root.AddCommand(newSnapshotCmd(&settingsDir, newClient))
+	root.AddCommand(newPlanCmd(&settingsDir, newClient))
 	return root
 }
 

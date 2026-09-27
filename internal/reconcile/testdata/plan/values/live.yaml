@@ -1,0 +1,7 @@
+variables:
+  CHANGED: before
+  SAME: x
+  EXTRA: y
+secrets:
+  PRESENT:
+    from_env: PRESENT

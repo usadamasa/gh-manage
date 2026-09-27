@@ -1,0 +1,12 @@
+rulesets:
+  old:
+    target: branch
+    enforcement: active
+variables:
+  FOO: bar
+secrets:
+  OLD_SECRET:
+    from_env: OLD_SECRET
+dependabot_secrets:
+  NPM_TOKEN:
+    from_env: NPM_TOKEN

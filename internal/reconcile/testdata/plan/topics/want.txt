@@ -1,0 +1,2 @@
+topics:
+  ~ update topics: ["cli","github"] -> ["cli","go"]

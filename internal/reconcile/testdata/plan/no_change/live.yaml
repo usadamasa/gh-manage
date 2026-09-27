@@ -1,0 +1,24 @@
+# live 側にだけあるキー (server が埋める既定値) は無視する
+repository:
+  has_wiki: false
+  has_issues: true
+  visibility: public
+rulesets:
+  main:
+    target: branch
+    enforcement: active
+    bypass_actors: []
+    conditions:
+      ref_name:
+        include: ["~DEFAULT_BRANCH"]
+        exclude: []
+    rules:
+      - type: pull_request
+        parameters:
+          required_approving_review_count: 0
+          dismiss_stale_reviews_on_push: false
+          required_reviewers: []
+      - type: deletion
+secrets:
+  TOKEN:
+    from_env: TOKEN

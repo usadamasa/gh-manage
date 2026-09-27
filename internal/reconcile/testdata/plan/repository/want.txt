@@ -1,0 +1,4 @@
+repository:
+  ~ update repository.description: "old" -> "new"
+  ~ update repository.visibility: "public" -> "private"
+  ~ update repository.has_wiki: true -> false

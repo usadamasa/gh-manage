@@ -1,0 +1,14 @@
+rulesets:
+  main:
+    target: branch
+    enforcement: evaluate
+    rules:
+      - type: deletion
+      - type: non_fast_forward
+      - type: pull_request
+        parameters:
+          required_approving_review_count: 0
+          required_reviewers: []
+  legacy:
+    target: branch
+    enforcement: active
