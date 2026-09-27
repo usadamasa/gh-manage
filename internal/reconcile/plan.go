@@ -62,8 +62,8 @@ func Plan(repo string, desired, live *config.Settings) RepoPlan {
 	p.planTopics(desired.Topics, live.Topics)
 	p.planRulesets(desired, live)
 	p.planVariables(desired, live)
-	p.planSecrets("secret", "secrets", desired.Secrets, live.Secrets, desired.Prune.Secrets)
-	p.planSecrets("dependabot_secret", "dependabot_secrets", desired.DependabotSecrets, live.DependabotSecrets, desired.Prune.DependabotSecrets)
+	p.planSecrets(KindSecret, "secrets", desired.Secrets, live.Secrets, desired.Prune.Secrets)
+	p.planSecrets(KindDependabotSecret, "dependabot_secrets", desired.DependabotSecrets, live.DependabotSecrets, desired.Prune.DependabotSecrets)
 	return *p
 }
 

@@ -45,7 +45,12 @@ func (f fakeAPI) addRepo(name, repoJSON string) {
 	f[p+"/actions/variables?per_page=30"] = `{"variables":[]}`
 	f[p+"/actions/secrets?per_page=100"] = `{"secrets":[{"name":"TOKEN"}]}`
 	f[p+"/dependabot/secrets?per_page=100"] = `{"secrets":[]}`
+	f[p+"/actions/secrets/public-key"] = testPublicKey
+	f[p+"/dependabot/secrets/public-key"] = testPublicKey
 }
+
+// testPublicKey is a 32-byte Curve25519 public key, enough for sealing in tests.
+const testPublicKey = `{"key_id":"kid","key":"MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="}`
 
 func newFakeAPI() fakeAPI {
 	f := fakeAPI{

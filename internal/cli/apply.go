@@ -3,7 +3,10 @@ package cli
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -61,56 +64,131 @@ func runApply(cmd *cobra.Command, settingsDir string, newClient clientFactory, o
 	if err := reconcile.WriteText(out, plans); err != nil {
 		return err
 	}
-	if !anyChanges(plans) {
+	work, err := planned.actions()
+	if err != nil {
+		return err
+	}
+	// secret の値は書き込みを始める前に全部そろっているか確かめる (途中までの apply を避ける)
+	values, err := secretValues(work)
+	if err != nil {
+		return err
+	}
+	if len(work) == 0 {
 		return nil
 	}
+	writeRewrites(out, work)
 	if !opts.yes && !confirm(cmd) {
 		_, _ = fmt.Fprintln(out, "apply をやめた")
 		return nil
 	}
-	for _, e := range planned.entries {
-		if !e.plan.HasChanges() {
-			continue
-		}
-		acts, err := reconcile.Actions(e.plan, e.desired)
-		if err != nil {
-			return err
-		}
-		for _, a := range acts {
-			if err := execute(ctx, client, planned.owner, e.plan.Repo, a); err != nil {
+	x := executor{client: client, owner: planned.owner, secrets: values}
+	for _, w := range work {
+		for _, a := range w.actions {
+			if err := x.execute(ctx, w.repo, a); err != nil {
 				return err
 			}
 		}
-		_, _ = fmt.Fprintf(out, "applied %s\n", e.plan.Repo)
+		_, _ = fmt.Fprintf(out, "applied %s\n", w.repo)
 	}
 	return nil
 }
 
-// execute carries out one action. domain (reconcile) は GitHub を知らないので､ここで client に写す｡
-func execute(ctx context.Context, client *github.Client, owner, repo string, a reconcile.Action) error {
-	switch a.Op {
-	case reconcile.ActCreateRepository:
-		return client.CreateRepository(ctx, repo, a.Repository)
-	case reconcile.ActUpdateRepository:
-		return client.UpdateRepository(ctx, owner, repo, a.Fields)
-	case reconcile.ActSetTopics:
-		return client.SetTopics(ctx, owner, repo, a.Topics)
-	case reconcile.ActUpsertRuleset:
-		return client.UpsertRuleset(ctx, owner, repo, a.Name, a.Ruleset)
-	case reconcile.ActDeleteRuleset:
-		return client.DeleteRuleset(ctx, owner, repo, a.Name)
-	default:
-		return fmt.Errorf("unknown action %q", a.Op)
+// repoActions is the writes to one repository.
+type repoActions struct {
+	repo    string
+	actions []reconcile.Action
+}
+
+// actions turns every plan into writes, leaving out repositories with nothing to write.
+func (p planned) actions() ([]repoActions, error) {
+	var work []repoActions
+	for _, e := range p.entries {
+		acts, err := reconcile.Actions(e.plan, e.desired)
+		if err != nil {
+			return nil, err
+		}
+		if len(acts) > 0 {
+			work = append(work, repoActions{repo: e.plan.Repo, actions: acts})
+		}
+	}
+	return work, nil
+}
+
+// secretValues reads the environment variable of every secret to put, keyed by its name.
+// 1 つでも無い (空も含む) ものがあれば､全部を挙げてエラーにする｡
+func secretValues(work []repoActions) (map[string]string, error) {
+	values := map[string]string{}
+	var errs []error
+	for _, w := range work {
+		for _, a := range w.actions {
+			if a.Op != reconcile.ActPutSecret {
+				continue
+			}
+			env := a.Secret.FromEnv
+			if v := os.Getenv(env); v != "" {
+				values[env] = v
+				continue
+			}
+			errs = append(errs, fmt.Errorf("%s: %s %s の環境変数 %s が無い", w.repo, a.Kind, a.Name, env))
+		}
+	}
+	return values, errors.Join(errs...)
+}
+
+// writeRewrites lists the secrets apply writes again. plan には出ないので､確認の前に見せる｡
+func writeRewrites(out io.Writer, work []repoActions) {
+	for _, w := range work {
+		var names []string
+		for _, a := range w.actions {
+			if a.Op == reconcile.ActPutSecret {
+				names = append(names, a.Kind+" "+a.Name)
+			}
+		}
+		if len(names) > 0 {
+			_, _ = fmt.Fprintf(out, "%s: %s を書き直す (値は比較できないので毎回)\n", w.repo, strings.Join(names, ", "))
+		}
 	}
 }
 
-func anyChanges(plans []reconcile.RepoPlan) bool {
-	for _, p := range plans {
-		if p.HasChanges() {
-			return true
-		}
+// executor carries out actions. domain (reconcile) は GitHub を知らないので､ここで client に写す｡
+type executor struct {
+	client  *github.Client
+	owner   string
+	secrets map[string]string // 環境変数名 → 値
+}
+
+// secretStores maps the kinds of secrets to where they live.
+var secretStores = map[string]github.SecretStore{
+	reconcile.KindSecret:           github.SecretsActions,
+	reconcile.KindDependabotSecret: github.SecretsDependabot,
+}
+
+func (x executor) execute(ctx context.Context, repo string, a reconcile.Action) error {
+	c, owner := x.client, x.owner
+	switch a.Op {
+	case reconcile.ActCreateRepository:
+		return c.CreateRepository(ctx, repo, a.Repository)
+	case reconcile.ActUpdateRepository:
+		return c.UpdateRepository(ctx, owner, repo, a.Fields)
+	case reconcile.ActSetTopics:
+		return c.SetTopics(ctx, owner, repo, a.Topics)
+	case reconcile.ActUpsertRuleset:
+		return c.UpsertRuleset(ctx, owner, repo, a.Name, a.Ruleset)
+	case reconcile.ActDeleteRuleset:
+		return c.DeleteRuleset(ctx, owner, repo, a.Name)
+	case reconcile.ActCreateVariable:
+		return c.CreateVariable(ctx, owner, repo, a.Name, a.Value)
+	case reconcile.ActUpdateVariable:
+		return c.UpdateVariable(ctx, owner, repo, a.Name, a.Value)
+	case reconcile.ActDeleteVariable:
+		return c.DeleteVariable(ctx, owner, repo, a.Name)
+	case reconcile.ActPutSecret:
+		return c.PutSecret(ctx, owner, repo, secretStores[a.Kind], a.Name, x.secrets[a.Secret.FromEnv])
+	case reconcile.ActDeleteSecret:
+		return c.DeleteSecret(ctx, owner, repo, secretStores[a.Kind], a.Name)
+	default:
+		return fmt.Errorf("unknown action %q", a.Op)
 	}
-	return false
 }
 
 // confirm asks on stdout and reads the answer from stdin. y / yes だけを了承とみなす｡

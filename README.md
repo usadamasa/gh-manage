@@ -102,6 +102,11 @@ go install github.com/usadamasa/gh-manage/cmd/gh-manage@latest
 - repository は変わったキーだけを `PATCH` する｡宣言していないキーは送らない
 - ruleset は名前で探して､あれば `PUT`､無ければ `POST` で宣言全体を書く｡削除は `prune.rulesets` のときだけ
 - 宣言があって GitHub に無いリポジトリは `POST /user/repos` (`auto_init: true`) で作り､続けて宣言した設定をすべて入れる
+- variable は無ければ `POST`､値が違えば `PATCH` する｡削除は `prune.variables` のときだけ
+- secret (Actions / Dependabot) は宣言したものを差分の有無にかかわらず毎回書き直す｡
+  リポジトリの公開鍵を取得し､`from_env` の環境変数の値を sealed box (`golang.org/x/crypto/nacl/box`) で封緘して `PUT` する｡
+  値は plan にも出力にも出さず､書き直す secret の名前だけを確認の前に表示する｡削除は `prune.secrets` / `prune.dependabot_secrets` のときだけ
+- `from_env` の環境変数が 1 つでも無い (空も含む) と､何も書き込まずに止める
 - private を public にする変更が 1 件でもあれば､`--allow-publish` が無い限り何も書き込まずに止める
 
 ### 差分の見方

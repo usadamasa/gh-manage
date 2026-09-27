@@ -41,8 +41,42 @@ func (f *fakeGitHub) run(t *testing.T, acts []Action) {
 		case ActDeleteRuleset:
 			f.calls = append(f.calls, "delete ruleset "+a.Name)
 			delete(f.live.Rulesets, a.Name)
+		default:
+			f.runValue(a)
 		}
 	}
+}
+
+// runValue applies the variable and secret actions.
+func (f *fakeGitHub) runValue(a Action) {
+	switch a.Op {
+	case ActCreateVariable, ActUpdateVariable:
+		f.calls = append(f.calls, string(a.Op)+" "+a.Name+"="+a.Value)
+		if f.live.Variables == nil {
+			f.live.Variables = map[string]string{}
+		}
+		f.live.Variables[a.Name] = a.Value
+	case ActDeleteVariable:
+		f.calls = append(f.calls, "delete variable "+a.Name)
+		delete(f.live.Variables, a.Name)
+	case ActPutSecret:
+		f.calls = append(f.calls, "put "+a.Kind+" "+a.Name+" from "+a.Secret.FromEnv)
+		s := f.secrets(a.Kind)
+		if *s == nil {
+			*s = config.Secrets{}
+		}
+		(*s)[a.Name] = config.Secret{FromEnv: a.Name}
+	case ActDeleteSecret:
+		f.calls = append(f.calls, "delete "+a.Kind+" "+a.Name)
+		delete(*f.secrets(a.Kind), a.Name)
+	}
+}
+
+func (f *fakeGitHub) secrets(kind string) *config.Secrets {
+	if kind == KindDependabotSecret {
+		return &f.live.DependabotSecrets
+	}
+	return &f.live.Secrets
 }
 
 func actions(t *testing.T, p RepoPlan, desired *config.Settings) []Action {
@@ -54,27 +88,15 @@ func actions(t *testing.T, p RepoPlan, desired *config.Settings) []Action {
 	return acts
 }
 
-// applied reports the changes Apply handles in this step (repository, topics, rulesets).
-func applied(p RepoPlan) []Change {
-	var out []Change
-	for _, c := range p.Changes {
-		switch c.Kind {
-		case "repository", "topics", "ruleset":
-			out = append(out, c)
-		}
-	}
-	return out
-}
-
 // TestApply_Converges applies every golden plan and checks that planning again finds nothing.
 func TestApply_Converges(t *testing.T) {
-	for _, name := range []string{"repository", "rulesets", "prune", "topics", "create_repo", "no_change"} {
+	for _, name := range []string{"repository", "rulesets", "prune", "topics", "create_repo", "no_change", "values"} {
 		t.Run(name, func(t *testing.T) {
 			dir := filepath.Join("testdata/plan", name)
 			desired := readSettings(t, filepath.Join(dir, "desired.yaml"))
 			w := &fakeGitHub{live: readSettings(t, filepath.Join(dir, "live.yaml"))}
 			w.run(t, actions(t, Plan(name, desired, w.live), desired))
-			if rest := applied(Plan(name, desired, w.live)); len(rest) != 0 {
+			if rest := Plan(name, desired, w.live).Changes; len(rest) != 0 {
 				t.Errorf("plan after apply = %+v, want none (calls %q)", rest, w.calls)
 			}
 		})
@@ -119,6 +141,68 @@ func TestActions_Calls(t *testing.T) {
 			w.run(t, actions(t, Plan("r", desired, tt.live), desired))
 			if !reflect.DeepEqual(w.calls, tt.want) {
 				t.Errorf("calls = %q, want %q", w.calls, tt.want)
+			}
+		})
+	}
+}
+
+func TestActions_Values(t *testing.T) {
+	desired := &config.Settings{
+		Prune:             config.Prune{Variables: true, Secrets: true},
+		Variables:         map[string]string{"NEW": "1", "CHANGED": "after", "SAME": "x"},
+		Secrets:           config.Secrets{"B": {FromEnv: "ENV_B"}, "A": {FromEnv: "ENV_A"}},
+		DependabotSecrets: config.Secrets{"DEP": {FromEnv: "ENV_DEP"}},
+	}
+	tests := []struct {
+		name string
+		live *config.Settings
+		want []string
+	}{
+		{
+			name: "variable は作成･更新･prune し､secret は宣言したものを全部書き直す",
+			live: &config.Settings{
+				Variables: map[string]string{"CHANGED": "before", "SAME": "x", "EXTRA": "y"},
+				Secrets:   config.Secrets{"A": {FromEnv: "A"}, "OLD": {FromEnv: "OLD"}},
+			},
+			want: []string{
+				"update_variable CHANGED=after",
+				"create_variable NEW=1",
+				"delete variable EXTRA",
+				"put secret A from ENV_A",
+				"put secret B from ENV_B",
+				"delete secret OLD",
+				"put dependabot_secret DEP from ENV_DEP",
+			},
+		},
+		{
+			name: "差分が無くても secret は書き直す (値の差分は見えないので)",
+			live: &config.Settings{
+				Variables:         map[string]string{"NEW": "1", "CHANGED": "after", "SAME": "x"},
+				Secrets:           config.Secrets{"A": {FromEnv: "A"}, "B": {FromEnv: "B"}},
+				DependabotSecrets: config.Secrets{"DEP": {FromEnv: "DEP"}},
+			},
+			want: []string{"put secret A from ENV_A", "put secret B from ENV_B", "put dependabot_secret DEP from ENV_DEP"},
+		},
+		{
+			name: "新規リポジトリには variable と secret も全部入れる",
+			live: nil,
+			want: []string{
+				"create",
+				"create_variable CHANGED=after",
+				"create_variable NEW=1",
+				"create_variable SAME=x",
+				"put secret A from ENV_A",
+				"put secret B from ENV_B",
+				"put dependabot_secret DEP from ENV_DEP",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &fakeGitHub{live: tt.live}
+			w.run(t, actions(t, Plan("r", desired, tt.live), desired))
+			if !reflect.DeepEqual(w.calls, tt.want) {
+				t.Errorf("calls =\n%q\nwant\n%q", w.calls, tt.want)
 			}
 		})
 	}
