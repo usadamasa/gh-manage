@@ -1,7 +1,6 @@
 package reconcile
 
 import (
-	"context"
 	"encoding/json"
 	"path/filepath"
 	"reflect"
@@ -11,43 +10,48 @@ import (
 	"github.com/usadamasa/gh-manage/internal/config"
 )
 
-// fakeWriter applies writes to an in-memory live state, the way GitHub would.
-type fakeWriter struct {
+// fakeGitHub applies actions to an in-memory live state, the way GitHub would.
+type fakeGitHub struct {
 	live  *config.Settings
 	calls []string
 }
 
-func (f *fakeWriter) CreateRepository(_ context.Context, name string, r config.Repository) error {
-	f.calls = append(f.calls, "create "+name)
-	f.live = &config.Settings{Repository: config.Repository{Visibility: r.Visibility, Description: r.Description}}
-	return nil
-}
-
-func (f *fakeWriter) UpdateRepository(_ context.Context, _, _ string, fields map[string]any) error {
-	b, _ := json.Marshal(fields)
-	f.calls = append(f.calls, "patch "+string(b))
-	return json.Unmarshal(b, &f.live.Repository)
-}
-
-func (f *fakeWriter) SetTopics(_ context.Context, _, _ string, topics []string) error {
-	f.calls = append(f.calls, "topics "+strings.Join(topics, ","))
-	f.live.Topics = topics
-	return nil
-}
-
-func (f *fakeWriter) UpsertRuleset(_ context.Context, _, _, name string, rs config.Ruleset) error {
-	f.calls = append(f.calls, "upsert ruleset "+name)
-	if f.live.Rulesets == nil {
-		f.live.Rulesets = map[string]config.Ruleset{}
+func (f *fakeGitHub) run(t *testing.T, acts []Action) {
+	t.Helper()
+	for _, a := range acts {
+		switch a.Op {
+		case ActCreateRepository:
+			f.calls = append(f.calls, "create")
+			f.live = &config.Settings{Repository: config.Repository{Visibility: a.Repository.Visibility, Description: a.Repository.Description}}
+		case ActUpdateRepository:
+			b, _ := json.Marshal(a.Fields)
+			f.calls = append(f.calls, "patch "+string(b))
+			if err := json.Unmarshal(b, &f.live.Repository); err != nil {
+				t.Fatal(err)
+			}
+		case ActSetTopics:
+			f.calls = append(f.calls, "topics "+strings.Join(a.Topics, ","))
+			f.live.Topics = a.Topics
+		case ActUpsertRuleset:
+			f.calls = append(f.calls, "upsert ruleset "+a.Name)
+			if f.live.Rulesets == nil {
+				f.live.Rulesets = map[string]config.Ruleset{}
+			}
+			f.live.Rulesets[a.Name] = a.Ruleset
+		case ActDeleteRuleset:
+			f.calls = append(f.calls, "delete ruleset "+a.Name)
+			delete(f.live.Rulesets, a.Name)
+		}
 	}
-	f.live.Rulesets[name] = rs
-	return nil
 }
 
-func (f *fakeWriter) DeleteRuleset(_ context.Context, _, _, name string) error {
-	f.calls = append(f.calls, "delete ruleset "+name)
-	delete(f.live.Rulesets, name)
-	return nil
+func actions(t *testing.T, p RepoPlan, desired *config.Settings) []Action {
+	t.Helper()
+	acts, err := Actions(p, desired)
+	if err != nil {
+		t.Fatalf("Actions() error = %v", err)
+	}
+	return acts
 }
 
 // applied reports the changes Apply handles in this step (repository, topics, rulesets).
@@ -68,11 +72,8 @@ func TestApply_Converges(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			dir := filepath.Join("testdata/plan", name)
 			desired := readSettings(t, filepath.Join(dir, "desired.yaml"))
-			w := &fakeWriter{live: readSettings(t, filepath.Join(dir, "live.yaml"))}
-
-			if err := Apply(context.Background(), w, "o", Plan(name, desired, w.live), desired); err != nil {
-				t.Fatalf("Apply() error = %v", err)
-			}
+			w := &fakeGitHub{live: readSettings(t, filepath.Join(dir, "live.yaml"))}
+			w.run(t, actions(t, Plan(name, desired, w.live), desired))
 			if rest := applied(Plan(name, desired, w.live)); len(rest) != 0 {
 				t.Errorf("plan after apply = %+v, want none (calls %q)", rest, w.calls)
 			}
@@ -80,7 +81,7 @@ func TestApply_Converges(t *testing.T) {
 	}
 }
 
-func TestApply_Calls(t *testing.T) {
+func TestActions_Calls(t *testing.T) {
 	desired := &config.Settings{
 		Repository: config.Repository{HasWiki: ptr(false), Visibility: ptr("public")},
 		Rulesets:   map[string]config.Ruleset{"main": {Target: "branch", Enforcement: "active"}},
@@ -101,7 +102,7 @@ func TestApply_Calls(t *testing.T) {
 		{
 			name: "無いリポジトリは作ってから宣言した設定を全部入れる",
 			live: nil,
-			want: []string{"create r", `patch {"has_wiki":false,"visibility":"public"}`, "upsert ruleset main"},
+			want: []string{"create", `patch {"has_wiki":false,"visibility":"public"}`, "upsert ruleset main"},
 		},
 		{
 			name: "差分が無ければ何も呼ばない",
@@ -114,10 +115,8 @@ func TestApply_Calls(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			w := &fakeWriter{live: tt.live}
-			if err := Apply(context.Background(), w, "o", Plan("r", desired, tt.live), desired); err != nil {
-				t.Fatalf("Apply() error = %v", err)
-			}
+			w := &fakeGitHub{live: tt.live}
+			w.run(t, actions(t, Plan("r", desired, tt.live), desired))
 			if !reflect.DeepEqual(w.calls, tt.want) {
 				t.Errorf("calls = %q, want %q", w.calls, tt.want)
 			}
@@ -125,13 +124,9 @@ func TestApply_Calls(t *testing.T) {
 	}
 }
 
-func TestApply_SkipDoesNothing(t *testing.T) {
-	w := &fakeWriter{}
-	if err := Apply(context.Background(), w, "o", Skip("r", "archived"), &config.Settings{}); err != nil {
-		t.Fatal(err)
-	}
-	if len(w.calls) != 0 {
-		t.Errorf("calls = %q, want none", w.calls)
+func TestActions_Skip(t *testing.T) {
+	if acts := actions(t, Skip("r", "archived"), &config.Settings{}); len(acts) != 0 {
+		t.Errorf("Actions() = %+v, want none", acts)
 	}
 }
 

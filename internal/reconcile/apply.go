@@ -1,7 +1,6 @@
 package reconcile
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,13 +9,26 @@ import (
 	"github.com/usadamasa/gh-manage/internal/config"
 )
 
-// Writer is what Apply needs from the GitHub API. internal/github の Client が満たす｡
-type Writer interface {
-	CreateRepository(ctx context.Context, name string, r config.Repository) error
-	UpdateRepository(ctx context.Context, owner, name string, fields map[string]any) error
-	SetTopics(ctx context.Context, owner, name string, topics []string) error
-	UpsertRuleset(ctx context.Context, owner, repo, name string, rs config.Ruleset) error
-	DeleteRuleset(ctx context.Context, owner, repo, name string) error
+// ActionOp is what an Action writes.
+type ActionOp string
+
+// Operations of an Action. 呼び出し側 (cli) が github.Client のメソッドに対応付けて実行する｡
+const (
+	ActCreateRepository ActionOp = "create_repository"
+	ActUpdateRepository ActionOp = "update_repository"
+	ActSetTopics        ActionOp = "set_topics"
+	ActUpsertRuleset    ActionOp = "upsert_ruleset"
+	ActDeleteRuleset    ActionOp = "delete_ruleset"
+)
+
+// Action is one write to GitHub. 使うフィールドは Op で決まる｡
+type Action struct {
+	Op         ActionOp
+	Repository config.Repository // ActCreateRepository
+	Fields     map[string]any    // ActUpdateRepository
+	Topics     []string          // ActSetTopics
+	Name       string            // ActUpsertRuleset / ActDeleteRuleset
+	Ruleset    config.Ruleset    // ActUpsertRuleset
 }
 
 // CheckPublish rejects plans that turn a private repository public.
@@ -33,16 +45,17 @@ func CheckPublish(plans []RepoPlan) error {
 	return errors.Join(errs...)
 }
 
-// Apply carries out the repository, topics and ruleset changes of p.
+// Actions turns the repository, topics and ruleset changes of p into writes, in order.
 // desired は p を作ったときの宣言で､ruleset は宣言全体を書き込む｡
-func Apply(ctx context.Context, w Writer, owner string, p RepoPlan, desired *config.Settings) error {
+func Actions(p RepoPlan, desired *config.Settings) ([]Action, error) {
 	if p.Skipped || !p.HasChanges() {
-		return nil
+		return nil, nil
 	}
 	if len(p.Changes) == 1 && p.Changes[0].Kind == "repository" && p.Changes[0].Op == OpCreate {
-		return create(ctx, w, owner, p.Repo, desired)
+		return createActions(desired)
 	}
 
+	var acts []Action
 	fields := map[string]any{}
 	var topics bool
 	var upserts, deletes []string
@@ -59,52 +72,39 @@ func Apply(ctx context.Context, w Writer, owner string, p RepoPlan, desired *con
 		}
 	}
 	if len(fields) > 0 {
-		if err := w.UpdateRepository(ctx, owner, p.Repo, fields); err != nil {
-			return err
-		}
+		acts = append(acts, Action{Op: ActUpdateRepository, Fields: fields})
 	}
 	if topics {
-		if err := w.SetTopics(ctx, owner, p.Repo, desired.Topics); err != nil {
-			return err
-		}
+		acts = append(acts, Action{Op: ActSetTopics, Topics: desired.Topics})
 	}
-	return applyRulesets(ctx, w, owner, p.Repo, desired, upserts, deletes)
+	return append(acts, rulesetActions(desired, upserts, deletes)...), nil
 }
 
-// create makes the repository and then writes every declared setting.
-func create(ctx context.Context, w Writer, owner, repo string, desired *config.Settings) error {
-	if err := w.CreateRepository(ctx, repo, desired.Repository); err != nil {
-		return err
-	}
+// createActions makes the repository and then writes every declared setting.
+func createActions(desired *config.Settings) ([]Action, error) {
+	acts := []Action{{Op: ActCreateRepository, Repository: desired.Repository}}
 	fields, err := declaredFields(desired.Repository)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if len(fields) > 0 {
-		if err := w.UpdateRepository(ctx, owner, repo, fields); err != nil {
-			return err
-		}
+		acts = append(acts, Action{Op: ActUpdateRepository, Fields: fields})
 	}
 	if desired.Topics != nil {
-		if err := w.SetTopics(ctx, owner, repo, desired.Topics); err != nil {
-			return err
-		}
+		acts = append(acts, Action{Op: ActSetTopics, Topics: desired.Topics})
 	}
-	return applyRulesets(ctx, w, owner, repo, desired, sortedKeys(desired.Rulesets), nil)
+	return append(acts, rulesetActions(desired, sortedKeys(desired.Rulesets), nil)...), nil
 }
 
-func applyRulesets(ctx context.Context, w Writer, owner, repo string, desired *config.Settings, upserts, deletes []string) error {
+func rulesetActions(desired *config.Settings, upserts, deletes []string) []Action {
+	var acts []Action
 	for _, name := range upserts {
-		if err := w.UpsertRuleset(ctx, owner, repo, name, desired.Rulesets[name]); err != nil {
-			return err
-		}
+		acts = append(acts, Action{Op: ActUpsertRuleset, Name: name, Ruleset: desired.Rulesets[name]})
 	}
 	for _, name := range deletes {
-		if err := w.DeleteRuleset(ctx, owner, repo, name); err != nil {
-			return err
-		}
+		acts = append(acts, Action{Op: ActDeleteRuleset, Name: name})
 	}
-	return nil
+	return acts
 }
 
 // declaredFields returns the non-nil fields of r keyed by their API names.

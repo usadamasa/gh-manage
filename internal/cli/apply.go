@@ -2,12 +2,14 @@ package cli
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/usadamasa/gh-manage/internal/config"
+	"github.com/usadamasa/gh-manage/internal/github"
 	"github.com/usadamasa/gh-manage/internal/reconcile"
 )
 
@@ -70,12 +72,36 @@ func runApply(cmd *cobra.Command, settingsDir string, newClient clientFactory, o
 		if !e.plan.HasChanges() {
 			continue
 		}
-		if err := reconcile.Apply(ctx, client, planned.owner, e.plan, e.desired); err != nil {
+		acts, err := reconcile.Actions(e.plan, e.desired)
+		if err != nil {
 			return err
+		}
+		for _, a := range acts {
+			if err := execute(ctx, client, planned.owner, e.plan.Repo, a); err != nil {
+				return err
+			}
 		}
 		_, _ = fmt.Fprintf(out, "applied %s\n", e.plan.Repo)
 	}
 	return nil
+}
+
+// execute carries out one action. domain (reconcile) は GitHub を知らないので､ここで client に写す｡
+func execute(ctx context.Context, client *github.Client, owner, repo string, a reconcile.Action) error {
+	switch a.Op {
+	case reconcile.ActCreateRepository:
+		return client.CreateRepository(ctx, repo, a.Repository)
+	case reconcile.ActUpdateRepository:
+		return client.UpdateRepository(ctx, owner, repo, a.Fields)
+	case reconcile.ActSetTopics:
+		return client.SetTopics(ctx, owner, repo, a.Topics)
+	case reconcile.ActUpsertRuleset:
+		return client.UpsertRuleset(ctx, owner, repo, a.Name, a.Ruleset)
+	case reconcile.ActDeleteRuleset:
+		return client.DeleteRuleset(ctx, owner, repo, a.Name)
+	default:
+		return fmt.Errorf("unknown action %q", a.Op)
+	}
 }
 
 func anyChanges(plans []reconcile.RepoPlan) bool {
