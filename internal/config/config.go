@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -23,47 +21,42 @@ type Config struct {
 // Load reads <dir>/base.yaml and <dir>/repos/*.yaml.
 // A file under repos/ means the repository is managed. Each file is checked
 // against the schema so that a typo fails here, not at apply.
+//
+// os.Root は使わない｡Go 1.24 の os.Root には未修正の脆弱性があり govulncheck が落ちる｡
+// dir は利用者が指定する settings ディレクトリそのものなので､閉じ込める必要も無い｡
 func Load(dir string) (*Config, error) {
-	root, err := os.OpenRoot(dir)
-	if err != nil {
-		return nil, fmt.Errorf("open settings: %w", err)
-	}
-	defer func() { _ = root.Close() }()
-	fsys := root.FS()
-
-	base, err := loadFile(fsys, dir, "base.yaml")
+	base, err := loadFile(filepath.Join(dir, "base.yaml"))
 	if err != nil {
 		return nil, err
 	}
 	cfg := &Config{base: base, overlays: map[string]*yaml.Node{}}
 
-	names, err := fs.Glob(fsys, "repos/*.yaml")
+	paths, err := filepath.Glob(filepath.Join(dir, "repos", "*.yaml"))
 	if err != nil {
 		return nil, fmt.Errorf("list overlays: %w", err)
 	}
-	for _, name := range names {
-		overlay, err := loadFile(fsys, dir, name)
+	for _, path := range paths {
+		overlay, err := loadFile(path)
 		if err != nil {
 			return nil, err
 		}
-		cfg.overlays[strings.TrimSuffix(path.Base(name), ".yaml")] = overlay
+		cfg.overlays[strings.TrimSuffix(filepath.Base(path), ".yaml")] = overlay
 	}
 	return cfg, nil
 }
 
 // loadFile reads a YAML map and checks it against the schema.
-func loadFile(fsys fs.FS, dir, name string) (*yaml.Node, error) {
-	display := filepath.Join(dir, filepath.FromSlash(name))
-	data, err := fs.ReadFile(fsys, name)
+func loadFile(path string) (*yaml.Node, error) {
+	data, err := os.ReadFile(path) // #nosec G304 -- path は利用者が指定した settings ディレクトリの中
 	if err != nil {
-		return nil, fmt.Errorf("read %s: %w", display, err)
+		return nil, fmt.Errorf("read %s: %w", path, err)
 	}
 	if err := decodeStrict(data, &Settings{}); err != nil {
-		return nil, fmt.Errorf("%s: %w", display, err)
+		return nil, fmt.Errorf("%s: %w", path, err)
 	}
 	n, err := parseMapping(data)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", display, err)
+		return nil, fmt.Errorf("%s: %w", path, err)
 	}
 	return n, nil
 }
