@@ -86,7 +86,7 @@ go install github.com/usadamasa/gh-manage/cmd/gh-manage@latest
 | コマンド | 役割 |
 | --- | --- |
 | `gh-manage render [name]` | base と overlay を合成した desired state を表示する｡name を省くと全リポジトリを名前の順に出す |
-| `gh-manage plan` | live を読んで差分を出す｡差分があれば exit 2 |
+| `gh-manage plan [--format text\|json]` | live を読んで差分を出す｡exit 0 = 差分なし､2 = 差分あり､1 = エラー |
 | `gh-manage apply [--yes]` | plan の結果を適用する |
 | `gh-manage snapshot [--repo name] [--minimize]` | live を `settings/repos/<name>.yaml` に書き出す (管理下に入れるとき)｡既存のファイルは上書きする |
 
@@ -100,6 +100,9 @@ go install github.com/usadamasa/gh-manage/cmd/gh-manage@latest
 ### 差分の見方
 
 - 宣言したキーが live と一致していれば同じとみなす｡live 側にだけあるキー (server が埋める既定値など) は無視する
+- ruleset の `rules` は `type` で対応付けて `parameters` を同じ規則で比べる｡list 全体を宣言するので､live にだけある type は差分になる
+- 出力はリポジトリごとに `+ create` / `~ update (key: old -> new)` / `- delete` / `= no change`｡宣言されていないものは `!` の notice
+- 宣言があって GitHub に無いリポジトリは create､archived のリポジトリは skip する
 - secret は API が値を返さないので有無だけ比較する｡apply では宣言した secret を毎回暗号化して書き直す
 - 宣言していない ruleset / variable / secret は､`prune` で true にした種別だけ削除し､それ以外は notice として表示する
 - visibility を private から public に変える apply は `--allow-publish` を付けないと拒否する
