@@ -1,0 +1,39 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/aquaproj/aqua/main/json-schema/registry.json
+# aqua の標準レジストリに存在しないパッケージだけを定義するローカルレジストリ｡
+# aqua.yaml から `registry: local` で参照する｡
+packages:
+  # fdaines/spm-go は標準レジストリに無く、GitHub Releases もタグしか無いため go_install で入れる｡
+  - name: fdaines/spm-go
+    type: go_install
+    path: github.com/fdaines/spm-go
+    repo_owner: fdaines
+    repo_name: spm-go
+    description: Software Package Metrics tool for Go
+    link: https://github.com/fdaines/spm-go
+    version_source: github_tag
+    files:
+      - name: spm-go
+
+  # go-arch-metrics plugin 同梱の解析 CLI｡バイナリ配布が無いので go_install で入れる｡
+  - name: usadamasa/go-arch-metrics/analyze-arch-lint
+    type: go_install
+    path: github.com/usadamasa/go-arch-metrics/cmd/analyze-arch-lint
+    repo_owner: usadamasa
+    repo_name: go-arch-metrics
+    description: Health metrics of .go-arch-lint.yml itself
+    link: https://github.com/usadamasa/go-arch-metrics
+    version_source: github_tag
+    files:
+      - name: analyze-arch-lint
+
+  - name: usadamasa/go-arch-metrics/analyze-modularity
+    type: go_install
+    path: github.com/usadamasa/go-arch-metrics/cmd/analyze-modularity
+    repo_owner: usadamasa
+    repo_name: go-arch-metrics
+    description: API surface metrics (public ratio, package size) for Go packages
+    link: https://github.com/usadamasa/go-arch-metrics
+    version_source: github_tag
+    files:
+      - name: analyze-modularity

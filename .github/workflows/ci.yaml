@@ -1,0 +1,67 @@
+name: CI
+
+"on":
+  pull_request:
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ruleset の required_status_checks が参照する名前｡test と lint のどちらかが落ちたときだけ走って失敗する｡
+  ci-status-check:
+    runs-on: ubuntu-latest
+    if: failure()
+    timeout-minutes: 10
+    needs:
+      - test
+      - lint
+    steps:
+      - run: exit 1
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Run tests
+        run: go test ./... -race -coverprofile=coverage.out
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage.out
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-aqua
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Check formatting
+        run: |
+          task format
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Code is not formatted properly"
+            git diff
+            exit 1
+          fi
+
+      - name: Run linters and architecture metrics
+        run: task lint

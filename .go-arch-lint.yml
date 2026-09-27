@@ -1,0 +1,32 @@
+version: 3
+
+workdir: .
+
+excludeFiles:
+  - ".*_test\\.go$"
+
+# 依存の向き: entry (cmd/*) → internal｡逆向きは禁止｡
+# 今は internal が cli / log / version の 3 パッケージだけなので 1 つの役割にまとめている｡
+# 後続 step でパッケージが増えたら役割ごとに切る (設定自体の健全性は analyze-arch-lint --strict . が見る):
+#   cli       internal/cli       cobra のコマンド定義 (entry 以外から import しない)
+#   config    internal/config    設定の読み込みと base + overlay の合成
+#   github    internal/github    GitHub API クライアント (go-gh はここだけが import する)
+#   reconcile internal/reconcile plan / apply の差分計算と適用
+#   shared    internal/log, internal/version
+components:
+  entry:
+    in: cmd/*
+  internal:
+    in: internal/**
+
+vendors:
+  cobra:
+    in: github.com/spf13/cobra
+
+deps:
+  entry:
+    mayDependOn:
+      - internal
+  internal:
+    canUse:
+      - cobra
