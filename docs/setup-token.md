@@ -62,6 +62,18 @@ gh secret set GH_MANAGE_TOKEN --repo usadamasa/gh-manage
 配布する secret の名前を settings に足したら､同じ名前で gh-manage の Actions secret にも値を置く｡
 workflow は secret を同名の環境変数として gh-manage に渡す｡
 
+`from_env` で書いた variable の値は gh-manage の Actions variable に置く｡
+
+| Variable | 内容 |
+| --- | --- |
+| `TAGPR_CLIENT_ID` | 配布する variable の値 (settings の `from_env: TAGPR_CLIENT_ID` が参照する) |
+
+```bash
+gh variable set TAGPR_CLIENT_ID --repo usadamasa/gh-manage
+```
+
+variable は plan で値を比べるので､workflow は Plan / Apply / Drift のすべてに渡す｡
+
 workflow は `.github/workflows/settings.yaml`｡
 
 | トリガー | job | 使う secret |
@@ -74,3 +86,4 @@ workflow は `.github/workflows/settings.yaml`｡
 - fork からの PR には secret が渡らないので Plan を走らせない
 - PR コメントは workflow の `GITHUB_TOKEN` で書く (PAT は使わない)
 - 配布する secret を足したら､workflow の Apply の `env` にも同じ名前で足す
+- `from_env` の variable を足したら､workflow の Plan / Apply / Drift の `env` に `${{ vars.<名前> }}` で足す

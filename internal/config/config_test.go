@@ -88,6 +88,18 @@ func TestLoad_Errors(t *testing.T) {
 			wantErr:  []string{"foo.yaml", "TOKEN", "from_env"},
 		},
 		{
+			name:     "variable に from_env 以外のキーを書く",
+			base:     testBase,
+			overlays: map[string]string{"foo": "variables:\n  FOO:\n    value: x\n"},
+			wantErr:  []string{"foo.yaml", "FOO", "value"},
+		},
+		{
+			name:     "variable の from_env が空",
+			base:     testBase,
+			overlays: map[string]string{"foo": "variables:\n  FOO:\n    from_env: \"\"\n"},
+			wantErr:  []string{"foo.yaml", "FOO", "from_env"},
+		},
+		{
 			name:     "ruleset の中の schema に無いキー",
 			base:     testBase,
 			overlays: map[string]string{"foo": "rulesets:\n  main:\n    enforcment: active\n"},
@@ -227,14 +239,19 @@ func TestRender(t *testing.T) {
 		{
 			name:    "variable の値は書いたとおりの文字列になる",
 			overlay: "variables:\n  GO_VERSION: 1.10\n",
-			want:    func(s *Settings) { s.Variables = map[string]string{"GO_VERSION": "1.10"} },
+			want:    func(s *Settings) { s.Variables = Variables{"GO_VERSION": {Value: "1.10"}} },
+		},
+		{
+			name:    "variable は from_env でも書ける",
+			overlay: "variables:\n  CLIENT_ID:\n    from_env: TAGPR_CLIENT_ID\n",
+			want:    func(s *Settings) { s.Variables = Variables{"CLIENT_ID": {FromEnv: "TAGPR_CLIENT_ID"}} },
 		},
 		{
 			name:    "variables と dependabot_secrets と topics を足す",
 			overlay: "topics: [go, cli]\nvariables:\n  FOO: bar\ndependabot_secrets:\n  NPM_TOKEN:\n    from_env: NPM_TOKEN\n",
 			want: func(s *Settings) {
 				s.Topics = []string{"go", "cli"}
-				s.Variables = map[string]string{"FOO": "bar"}
+				s.Variables = Variables{"FOO": {Value: "bar"}}
 				s.DependabotSecrets = map[string]Secret{"NPM_TOKEN": {FromEnv: "NPM_TOKEN"}}
 			},
 		},
@@ -281,6 +298,7 @@ func TestRender_ValidationErrors(t *testing.T) {
 		{"from_env が環境変数名でない", "secrets:\n  TOKEN:\n    from_env: \"a b\"\n", "TOKEN"},
 		{"secret 名が不正", "secrets:\n  GITHUB_TOKEN:\n    from_env: X\n", "GITHUB_TOKEN"},
 		{"variable 名が不正", "variables:\n  1FOO: x\n", "1FOO"},
+		{"variable の from_env が環境変数名でない", "variables:\n  FOO:\n    from_env: \"a b\"\n", "FOO"},
 		{"ruleset の enforcement", "rulesets:\n  main:\n    enforcement: on\n", "enforcement"},
 		{"ruleset の target", "rulesets:\n  main:\n    target: commit\n", "target"},
 		{"rule の type が空", "rulesets:\n  main:\n    rules:\n      - parameters: {}\n", "type"},
@@ -338,5 +356,50 @@ secrets:
 `
 	if string(got) != want {
 		t.Errorf("Encode() =\n%s\nwant\n%s", got, want)
+	}
+}
+
+func TestVariables_ResolveEnv(t *testing.T) {
+	env := map[string]string{"CLIENT_ID": "Iv23", "EMPTY": ""}
+	lookup := func(k string) (string, bool) { v, ok := env[k]; return v, ok }
+	tests := []struct {
+		name    string
+		vars    Variables
+		want    Variables
+		wantErr []string
+	}{
+		{
+			name: "from_env は環境変数の値を入れ､平文はそのまま",
+			vars: Variables{"ID": {FromEnv: "CLIENT_ID"}, "GO": {Value: "1.27"}},
+			want: Variables{"ID": {Value: "Iv23", FromEnv: "CLIENT_ID"}, "GO": {Value: "1.27"}},
+		},
+		{
+			name:    "無いものと空のものを全部挙げる",
+			vars:    Variables{"A": {FromEnv: "MISSING"}, "B": {FromEnv: "EMPTY"}},
+			wantErr: []string{"A", "MISSING", "B", "EMPTY"},
+		},
+		{name: "nil でもよい"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.vars.ResolveEnv(lookup)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Fatal("ResolveEnv() error = nil, want error")
+				}
+				for _, w := range tt.wantErr {
+					if !strings.Contains(err.Error(), w) {
+						t.Errorf("ResolveEnv() error = %q, want it to contain %q", err, w)
+					}
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("ResolveEnv() error = %v", err)
+			}
+			if !reflect.DeepEqual(tt.vars, tt.want) {
+				t.Errorf("ResolveEnv() = %#v, want %#v", tt.vars, tt.want)
+			}
+		})
 	}
 }

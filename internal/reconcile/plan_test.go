@@ -75,7 +75,7 @@ func TestPlan_HasChanges(t *testing.T) {
 		want bool
 	}{
 		{"変更なし", Plan("r", &config.Settings{}, &config.Settings{}), false},
-		{"notice だけなら変更なし", Plan("r", &config.Settings{}, &config.Settings{Variables: map[string]string{"A": "b"}}), false},
+		{"notice だけなら変更なし", Plan("r", &config.Settings{}, &config.Settings{Variables: config.Variables{"A": {Value: "b"}}}), false},
 		{"skip は変更なし", Skip("r", "archived"), false},
 		{"create は変更あり", Plan("r", &config.Settings{}, nil), true},
 	}
@@ -99,8 +99,8 @@ func TestWriteText_Skip(t *testing.T) {
 }
 
 func TestWriteJSON(t *testing.T) {
-	desired := &config.Settings{Variables: map[string]string{"A": "new"}}
-	live := &config.Settings{Variables: map[string]string{"A": "old"}}
+	desired := &config.Settings{Variables: config.Variables{"A": {Value: "new"}}}
+	live := &config.Settings{Variables: config.Variables{"A": {Value: "old"}}}
 	var buf bytes.Buffer
 	if err := WriteJSON(&buf, []RepoPlan{Plan("r", desired, live)}); err != nil {
 		t.Fatal(err)

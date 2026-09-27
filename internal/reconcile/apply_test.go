@@ -53,9 +53,9 @@ func (f *fakeGitHub) runValue(a Action) {
 	case ActCreateVariable, ActUpdateVariable:
 		f.calls = append(f.calls, string(a.Op)+" "+a.Name+"="+a.Value)
 		if f.live.Variables == nil {
-			f.live.Variables = map[string]string{}
+			f.live.Variables = config.Variables{}
 		}
-		f.live.Variables[a.Name] = a.Value
+		f.live.Variables[a.Name] = config.Variable{Value: a.Value}
 	case ActDeleteVariable:
 		f.calls = append(f.calls, "delete variable "+a.Name)
 		delete(f.live.Variables, a.Name)
@@ -149,7 +149,7 @@ func TestActions_Calls(t *testing.T) {
 func TestActions_Values(t *testing.T) {
 	desired := &config.Settings{
 		Prune:             config.Prune{Variables: true, Secrets: true},
-		Variables:         map[string]string{"NEW": "1", "CHANGED": "after", "SAME": "x"},
+		Variables:         config.Variables{"NEW": {Value: "1"}, "CHANGED": {Value: "after"}, "SAME": {Value: "x"}},
 		Secrets:           config.Secrets{"B": {FromEnv: "ENV_B"}, "A": {FromEnv: "ENV_A"}},
 		DependabotSecrets: config.Secrets{"DEP": {FromEnv: "ENV_DEP"}},
 	}
@@ -161,7 +161,7 @@ func TestActions_Values(t *testing.T) {
 		{
 			name: "variable は作成･更新･prune し､secret は宣言したものを全部書き直す",
 			live: &config.Settings{
-				Variables: map[string]string{"CHANGED": "before", "SAME": "x", "EXTRA": "y"},
+				Variables: config.Variables{"CHANGED": {Value: "before"}, "SAME": {Value: "x"}, "EXTRA": {Value: "y"}},
 				Secrets:   config.Secrets{"A": {FromEnv: "A"}, "OLD": {FromEnv: "OLD"}},
 			},
 			want: []string{
@@ -177,7 +177,7 @@ func TestActions_Values(t *testing.T) {
 		{
 			name: "差分が無くても secret は書き直す (値の差分は見えないので)",
 			live: &config.Settings{
-				Variables:         map[string]string{"NEW": "1", "CHANGED": "after", "SAME": "x"},
+				Variables:         config.Variables{"NEW": {Value: "1"}, "CHANGED": {Value: "after"}, "SAME": {Value: "x"}},
 				Secrets:           config.Secrets{"A": {FromEnv: "A"}, "B": {FromEnv: "B"}},
 				DependabotSecrets: config.Secrets{"DEP": {FromEnv: "DEP"}},
 			},

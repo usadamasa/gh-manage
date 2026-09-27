@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -93,6 +94,10 @@ func (p planned) plans() []reconcile.RepoPlan {
 
 // buildPlans plans every repository that has settings/repos/<name>.yaml.
 func buildPlans(ctx context.Context, cfg *config.Config, client *github.Client) (planned, error) {
+	rendered, err := renderAll(cfg)
+	if err != nil {
+		return planned{}, err
+	}
 	owner, err := client.CurrentUser(ctx)
 	if err != nil {
 		return planned{}, err
@@ -108,10 +113,7 @@ func buildPlans(ctx context.Context, cfg *config.Config, client *github.Client) 
 
 	out := planned{owner: owner}
 	for _, name := range cfg.Names() {
-		desired, err := cfg.Render(name)
-		if err != nil {
-			return planned{}, err
-		}
+		desired := rendered[name]
 		var p reconcile.RepoPlan
 		repo, exists := owned[name]
 		switch {
@@ -129,4 +131,23 @@ func buildPlans(ctx context.Context, cfg *config.Config, client *github.Client) 
 		out.entries = append(out.entries, plannedRepo{plan: p, desired: desired})
 	}
 	return out, nil
+}
+
+// renderAll renders every repository and reads the from_env variables from the environment.
+// variable は plan で値を比べるので､secret と違い plan の時点で環境変数が要る｡
+// 無いものがあれば､全部を挙げてエラーにする｡
+func renderAll(cfg *config.Config) (map[string]*config.Settings, error) {
+	out := map[string]*config.Settings{}
+	var errs []error
+	for _, name := range cfg.Names() {
+		desired, err := cfg.Render(name)
+		if err != nil {
+			return nil, err
+		}
+		if err := desired.Variables.ResolveEnv(os.LookupEnv); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", name, err))
+		}
+		out[name] = desired
+	}
+	return out, errors.Join(errs...)
 }

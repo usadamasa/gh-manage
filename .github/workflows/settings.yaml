@@ -48,6 +48,8 @@ jobs:
         id: plan
         env:
           GH_TOKEN: ${{ secrets.GH_MANAGE_TOKEN }}
+          # variable の値｡plan で値を比べるので Plan / Drift にも渡す
+          TAGPR_CLIENT_ID: ${{ vars.TAGPR_CLIENT_ID }}
         run: |
           if [ ! -f settings/base.yaml ]; then
             echo "settings/base.yaml が無いので plan しない" | tee -a "$GITHUB_STEP_SUMMARY"
@@ -103,6 +105,8 @@ jobs:
       - name: Apply
         env:
           GH_TOKEN: ${{ secrets.GH_MANAGE_TOKEN }}
+          # 配布する variable の値｡settings の from_env と同じ名前で渡す
+          TAGPR_CLIENT_ID: ${{ vars.TAGPR_CLIENT_ID }}
           # 配布する secret の値｡settings の from_env と同じ名前で渡す
           TAGPR_PRIVATE_KEY: ${{ secrets.TAGPR_PRIVATE_KEY }}
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -142,6 +146,8 @@ jobs:
       - name: Plan
         env:
           GH_TOKEN: ${{ secrets.GH_MANAGE_TOKEN }}
+          # variable の値｡plan で値を比べるので Plan / Drift にも渡す
+          TAGPR_CLIENT_ID: ${{ vars.TAGPR_CLIENT_ID }}
         run: |
           if [ ! -f settings/base.yaml ]; then
             echo "settings/base.yaml が無いので plan しない" | tee -a "$GITHUB_STEP_SUMMARY"
