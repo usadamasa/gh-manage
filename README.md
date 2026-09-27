@@ -88,7 +88,14 @@ go install github.com/usadamasa/gh-manage/cmd/gh-manage@latest
 | `gh-manage render [name]` | base と overlay を合成した desired state を表示する｡name を省くと全リポジトリを名前の順に出す |
 | `gh-manage plan` | live を読んで差分を出す｡差分があれば exit 2 |
 | `gh-manage apply [--yes]` | plan の結果を適用する |
-| `gh-manage snapshot [--repo name] [--minimize]` | live を overlay の形で書き出す (管理下に入れるとき) |
+| `gh-manage snapshot [--repo name] [--minimize]` | live を `settings/repos/<name>.yaml` に書き出す (管理下に入れるとき)｡既存のファイルは上書きする |
+
+### snapshot
+
+- `--repo` を省くと自分が owner の全リポジトリを書き出す｡archived と fork は `--include-archived` / `--include-forks` を付けたときだけ含める
+- `--minimize` は base.yaml との差分だけを残す｡base にあって live に無いものは `null` で書くので､render すると live と同じになる
+- secret は値を読めないので名前だけ書き､`from_env` に同じ名前を入れる
+- 最後に rate limit の残り (`X-RateLimit-Remaining`) を stderr に出す
 
 ### 差分の見方
 
@@ -116,7 +123,7 @@ fine-grained PAT 1 本で動く｡作り方は [docs/setup-token.md](docs/setup-
 
 ### 前提
 
-- Go 1.24 以上
+- Go 1.25 以上
 - [aqua](https://aquaproj.github.io/) (ツールのバージョン固定)
 - [direnv](https://direnv.net/) (任意｡`.envrc` が PATH と aqua の policy を通す)
 

@@ -5,12 +5,12 @@ workdir: .
 excludeFiles:
   - ".*_test\\.go$"
 
-# 依存の向き: entry → domain､shared はどこからでも使える｡逆向きは禁止｡
+# 依存の向き: entry → infra → domain､shared はどこからでも使える｡逆向きは禁止｡
 # component はパッケージ単位ではなく役割単位で切る (analyze-arch-lint が singleton の多さを咎める)｡
 #   entry   cmd/*, internal/cli  エントリポイントと cobra のコマンド定義
 #   domain  internal/config      設定の読み込みと base + overlay の合成 (後続 step で internal/reconcile も入る)
+#   infra   internal/github      GitHub API クライアント (go-gh はここだけが import する)
 #   shared  internal/log, internal/version
-# internal/github (go-gh はここだけが import する) は step 3 で component を足す｡
 components:
   entry:
     in:
@@ -19,6 +19,9 @@ components:
   domain:
     in:
       - internal/config
+  infra:
+    in:
+      - internal/github
   shared:
     in:
       - internal/log
@@ -29,6 +32,10 @@ vendors:
     in: github.com/spf13/cobra
   yaml:
     in: go.yaml.in/yaml/v3
+  gogh:
+    in:
+      - github.com/cli/go-gh/v2/pkg/api
+      - github.com/cli/go-gh/v2/pkg/auth
 
 commonComponents:
   - shared
@@ -38,8 +45,14 @@ deps:
     mayDependOn:
       - entry  # cmd/* → internal/cli
       - domain
+      - infra
     canUse:
       - cobra
   domain:
     canUse:
       - yaml
+  infra:
+    mayDependOn:
+      - domain
+    canUse:
+      - gogh

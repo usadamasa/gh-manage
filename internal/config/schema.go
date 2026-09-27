@@ -35,60 +35,60 @@ type Prune struct {
 // nil は「宣言していない」を表し､plan で比較しない｡
 // name は rename を防ぐため受け付けない｡
 type Repository struct {
-	Description              *string `yaml:"description,omitempty"`
-	Homepage                 *string `yaml:"homepage,omitempty"`
-	Visibility               *string `yaml:"visibility,omitempty"`
-	HasIssues                *bool   `yaml:"has_issues,omitempty"`
-	HasProjects              *bool   `yaml:"has_projects,omitempty"`
-	HasWiki                  *bool   `yaml:"has_wiki,omitempty"`
-	HasDiscussions           *bool   `yaml:"has_discussions,omitempty"`
-	IsTemplate               *bool   `yaml:"is_template,omitempty"`
-	DefaultBranch            *string `yaml:"default_branch,omitempty"`
-	AllowSquashMerge         *bool   `yaml:"allow_squash_merge,omitempty"`
-	AllowMergeCommit         *bool   `yaml:"allow_merge_commit,omitempty"`
-	AllowRebaseMerge         *bool   `yaml:"allow_rebase_merge,omitempty"`
-	AllowAutoMerge           *bool   `yaml:"allow_auto_merge,omitempty"`
-	DeleteBranchOnMerge      *bool   `yaml:"delete_branch_on_merge,omitempty"`
-	AllowUpdateBranch        *bool   `yaml:"allow_update_branch,omitempty"`
-	AllowForking             *bool   `yaml:"allow_forking,omitempty"`
-	WebCommitSignoffRequired *bool   `yaml:"web_commit_signoff_required,omitempty"`
-	SquashMergeCommitTitle   *string `yaml:"squash_merge_commit_title,omitempty"`
-	SquashMergeCommitMessage *string `yaml:"squash_merge_commit_message,omitempty"`
-	MergeCommitTitle         *string `yaml:"merge_commit_title,omitempty"`
-	MergeCommitMessage       *string `yaml:"merge_commit_message,omitempty"`
+	Description              *string `yaml:"description,omitempty" json:"description,omitempty"`
+	Homepage                 *string `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	Visibility               *string `yaml:"visibility,omitempty" json:"visibility,omitempty"`
+	HasIssues                *bool   `yaml:"has_issues,omitempty" json:"has_issues,omitempty"`
+	HasProjects              *bool   `yaml:"has_projects,omitempty" json:"has_projects,omitempty"`
+	HasWiki                  *bool   `yaml:"has_wiki,omitempty" json:"has_wiki,omitempty"`
+	HasDiscussions           *bool   `yaml:"has_discussions,omitempty" json:"has_discussions,omitempty"`
+	IsTemplate               *bool   `yaml:"is_template,omitempty" json:"is_template,omitempty"`
+	DefaultBranch            *string `yaml:"default_branch,omitempty" json:"default_branch,omitempty"`
+	AllowSquashMerge         *bool   `yaml:"allow_squash_merge,omitempty" json:"allow_squash_merge,omitempty"`
+	AllowMergeCommit         *bool   `yaml:"allow_merge_commit,omitempty" json:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge         *bool   `yaml:"allow_rebase_merge,omitempty" json:"allow_rebase_merge,omitempty"`
+	AllowAutoMerge           *bool   `yaml:"allow_auto_merge,omitempty" json:"allow_auto_merge,omitempty"`
+	DeleteBranchOnMerge      *bool   `yaml:"delete_branch_on_merge,omitempty" json:"delete_branch_on_merge,omitempty"`
+	AllowUpdateBranch        *bool   `yaml:"allow_update_branch,omitempty" json:"allow_update_branch,omitempty"`
+	AllowForking             *bool   `yaml:"allow_forking,omitempty" json:"allow_forking,omitempty"`
+	WebCommitSignoffRequired *bool   `yaml:"web_commit_signoff_required,omitempty" json:"web_commit_signoff_required,omitempty"`
+	SquashMergeCommitTitle   *string `yaml:"squash_merge_commit_title,omitempty" json:"squash_merge_commit_title,omitempty"`
+	SquashMergeCommitMessage *string `yaml:"squash_merge_commit_message,omitempty" json:"squash_merge_commit_message,omitempty"`
+	MergeCommitTitle         *string `yaml:"merge_commit_title,omitempty" json:"merge_commit_title,omitempty"`
+	MergeCommitMessage       *string `yaml:"merge_commit_message,omitempty" json:"merge_commit_message,omitempty"`
 }
 
 // Ruleset is a repository ruleset. The map key in Settings.Rulesets is its name.
 type Ruleset struct {
-	Target       string        `yaml:"target"`
-	Enforcement  string        `yaml:"enforcement"`
-	BypassActors []BypassActor `yaml:"bypass_actors,omitempty"`
-	Conditions   *Conditions   `yaml:"conditions,omitempty"`
-	Rules        []Rule        `yaml:"rules,omitempty"`
+	Target       string        `yaml:"target" json:"target"`
+	Enforcement  string        `yaml:"enforcement" json:"enforcement"`
+	BypassActors []BypassActor `yaml:"bypass_actors,omitempty" json:"bypass_actors,omitempty"`
+	Conditions   *Conditions   `yaml:"conditions,omitempty" json:"conditions,omitempty"`
+	Rules        []Rule        `yaml:"rules,omitempty" json:"rules,omitempty"`
 }
 
 // BypassActor is an entry of bypass_actors in the rulesets API.
 type BypassActor struct {
-	ActorID    *int64 `yaml:"actor_id,omitempty"`
-	ActorType  string `yaml:"actor_type"`
-	BypassMode string `yaml:"bypass_mode,omitempty"`
+	ActorID    *int64 `yaml:"actor_id,omitempty" json:"actor_id,omitempty"`
+	ActorType  string `yaml:"actor_type" json:"actor_type"`
+	BypassMode string `yaml:"bypass_mode,omitempty" json:"bypass_mode,omitempty"`
 }
 
 // Conditions is the conditions object of the rulesets API.
 type Conditions struct {
-	RefName *RefName `yaml:"ref_name,omitempty"`
+	RefName *RefName `yaml:"ref_name,omitempty" json:"ref_name,omitempty"`
 }
 
 // RefName is conditions.ref_name of the rulesets API.
 type RefName struct {
-	Include []string `yaml:"include"`
-	Exclude []string `yaml:"exclude"`
+	Include []string `yaml:"include" json:"include"`
+	Exclude []string `yaml:"exclude" json:"exclude"`
 }
 
 // Rule is an entry of rules[] in the rulesets API. parameters はそのまま API に渡す｡
 type Rule struct {
-	Type       string         `yaml:"type"`
-	Parameters map[string]any `yaml:"parameters,omitempty"`
+	Type       string         `yaml:"type" json:"type"`
+	Parameters map[string]any `yaml:"parameters,omitempty" json:"parameters,omitempty"`
 }
 
 // Secret is a secret whose value is read from an environment variable at apply time.

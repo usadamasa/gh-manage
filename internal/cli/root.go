@@ -3,9 +3,20 @@ package cli
 
 import (
 	"github.com/spf13/cobra"
+
+	"github.com/usadamasa/gh-manage/internal/github"
 )
 
+// clientFactory creates the GitHub client. テストは fake の RoundTripper を持つ client を渡す｡
+type clientFactory func() (*github.Client, error)
+
 func newRootCmd(displayVersion string) *cobra.Command {
+	return newRootCmdWith(displayVersion, func() (*github.Client, error) {
+		return github.New(github.Options{})
+	})
+}
+
+func newRootCmdWith(displayVersion string, newClient clientFactory) *cobra.Command {
 	root := &cobra.Command{
 		Use:   "gh-manage",
 		Short: "gh-manage - stateless configuration management for your GitHub repositories",
@@ -23,6 +34,7 @@ computes the difference, and applies only what changed.`,
 	var settingsDir string
 	root.PersistentFlags().StringVar(&settingsDir, "settings", "settings", "directory that holds base.yaml and repos/")
 	root.AddCommand(newRenderCmd(&settingsDir))
+	root.AddCommand(newSnapshotCmd(&settingsDir, newClient))
 	return root
 }
 

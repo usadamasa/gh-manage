@@ -10,7 +10,8 @@ gh-manage は､自分 (usadamasa) が保有する GitHub リポジトリの設�
 ├── cmd/gh-manage/      # エントリポイント (main)
 ├── internal/
 │   ├── cli/            # cobra のコマンド定義
-│   ├── config/         # settings/ の読み込み､schema 検証､base + overlay の合成
+│   ├── config/         # settings/ の読み込み､schema 検証､base + overlay の合成､snapshot の差分
+│   ├── github/         # GitHub REST API クライアント (go-gh)
 │   ├── log/            # 標準出力への出力 (forbidigo 対応)
 │   └── version/        # バージョン解決
 ├── settings/           # 管理対象の宣言 (base.yaml + repos/<name>.yaml)｡step 3 の snapshot で作る
@@ -35,7 +36,7 @@ task ci       # format + lint + test + build
 
 - 標準出力への出力は `internal/log` の `Logger` を使う (`log.Default.Printf` など｡`fmt.Print*` は forbidigo が止める)｡
   例外は `cmd/`､`internal/cli/`､`internal/log/`､テスト
-- GitHub API の呼び出しは `internal/github` (step 3 で作る) に閉じる｡他のパッケージからの go-gh の import は depguard が止める
+- GitHub API の呼び出しは `internal/github` に閉じる｡他のパッケージからの go-gh の import は depguard が止める
 - パッケージの依存方向は `.go-arch-lint.yml` で宣言する｡新しいパッケージを足したら component も足す
 - しきい値 (認知的複雑度 20､関数 100 行､nestif の複雑度 5､保守性指数 20) は `.golangci.yml`
 - テストは table-driven を基本にする｡`httptest.NewServer` は sandbox で bind できないので使わない｡
