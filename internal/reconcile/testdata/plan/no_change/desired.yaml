@@ -1,0 +1,18 @@
+repository:
+  has_wiki: false
+rulesets:
+  main:
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        include: ["~DEFAULT_BRANCH"]
+        exclude: []
+    rules:
+      - type: deletion
+      - type: pull_request
+        parameters:
+          required_approving_review_count: 0
+secrets:
+  TOKEN:
+    from_env: TOKEN

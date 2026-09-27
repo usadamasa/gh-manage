@@ -1,0 +1,12 @@
+variables:
+  NEW: "1"
+  CHANGED: after
+  SAME: x
+secrets:
+  PRESENT:
+    from_env: PRESENT
+  MISSING:
+    from_env: MISSING
+dependabot_secrets:
+  DEP:
+    from_env: DEP

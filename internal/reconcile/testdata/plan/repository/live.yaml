@@ -1,0 +1,5 @@
+repository:
+  visibility: public
+  has_wiki: true
+  description: old
+  has_issues: true

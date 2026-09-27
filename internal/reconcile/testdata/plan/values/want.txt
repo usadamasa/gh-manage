@@ -1,0 +1,6 @@
+values:
+  ~ update variable CHANGED: "before" -> "after"
+  + create variable NEW
+  + create secret MISSING
+  + create dependabot_secret DEP
+  ! variable EXTRA は宣言されていない (prune.variables: false なので残す)

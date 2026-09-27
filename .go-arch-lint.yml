@@ -8,7 +8,8 @@ excludeFiles:
 # 依存の向き: entry → infra → domain､shared はどこからでも使える｡逆向きは禁止｡
 # component はパッケージ単位ではなく役割単位で切る (analyze-arch-lint が singleton の多さを咎める)｡
 #   entry   cmd/*, internal/cli  エントリポイントと cobra のコマンド定義
-#   domain  internal/config      設定の読み込みと base + overlay の合成 (後続 step で internal/reconcile も入る)
+#   domain  internal/config      設定の読み込みと base + overlay の合成
+#           internal/reconcile   plan / apply の差分計算
 #   infra   internal/github      GitHub API クライアント (go-gh はここだけが import する)
 #   shared  internal/log, internal/version
 components:
@@ -19,6 +20,7 @@ components:
   domain:
     in:
       - internal/config
+      - internal/reconcile
   infra:
     in:
       - internal/github
@@ -49,6 +51,8 @@ deps:
     canUse:
       - cobra
   domain:
+    mayDependOn:
+      - domain  # reconcile → config
     canUse:
       - yaml
   infra:

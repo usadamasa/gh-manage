@@ -12,6 +12,7 @@ gh-manage は､自分 (usadamasa) が保有する GitHub リポジトリの設�
 │   ├── cli/            # cobra のコマンド定義
 │   ├── config/         # settings/ の読み込み､schema 検証､base + overlay の合成､snapshot の差分
 │   ├── github/         # GitHub REST API クライアント (go-gh)
+│   ├── reconcile/      # desired と live の差分 (plan)
 │   ├── log/            # 標準出力への出力 (forbidigo 対応)
 │   └── version/        # バージョン解決
 ├── settings/           # 管理対象の宣言 (base.yaml + repos/<name>.yaml)｡step 3 の snapshot で作る

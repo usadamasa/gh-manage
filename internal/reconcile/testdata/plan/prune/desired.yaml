@@ -1,0 +1,5 @@
+prune:
+  rulesets: true
+  variables: true
+  secrets: true
+  dependabot_secrets: true

@@ -1,0 +1,5 @@
+prune:
+  - delete ruleset old
+  - delete variable FOO
+  - delete secret OLD_SECRET
+  - delete dependabot_secret NPM_TOKEN
