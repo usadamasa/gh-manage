@@ -18,7 +18,7 @@ type Settings struct {
 	Repository        Repository         `yaml:"repository,omitempty"`
 	Topics            []string           `yaml:"topics,omitempty"`
 	Rulesets          map[string]Ruleset `yaml:"rulesets,omitempty"`
-	Variables         map[string]string  `yaml:"variables,omitempty"`
+	Variables         Variables          `yaml:"variables,omitempty"`
 	Secrets           Secrets            `yaml:"secrets,omitempty"`
 	DependabotSecrets Secrets            `yaml:"dependabot_secrets,omitempty"`
 }
@@ -91,6 +91,85 @@ type Rule struct {
 	Parameters map[string]any `yaml:"parameters,omitempty" json:"parameters,omitempty"`
 }
 
+// Variable is an Actions variable. 値は平文 (Value) か､plan / apply のときに環境変数から読む (FromEnv)｡
+type Variable struct {
+	Value   string
+	FromEnv string
+}
+
+// Variables maps a variable name to its value.
+type Variables map[string]Variable
+
+// UnmarshalYAML accepts `NAME: value` or `NAME: {from_env: ENV}` (or `NAME: null` in an overlay).
+func (vars *Variables) UnmarshalYAML(node *yaml.Node) error {
+	if node.Kind != yaml.MappingNode {
+		return fmt.Errorf("line %d: variables must be a map", node.Line)
+	}
+	out := make(Variables, len(node.Content)/2)
+	for i := 0; i+1 < len(node.Content); i += 2 {
+		key, val := node.Content[i], node.Content[i+1]
+		if val.ShortTag() == "!!null" {
+			continue
+		}
+		v, err := decodeVariable(key.Value, val)
+		if err != nil {
+			return err
+		}
+		out[key.Value] = v
+	}
+	*vars = out
+	return nil
+}
+
+func decodeVariable(name string, val *yaml.Node) (Variable, error) {
+	switch val.Kind {
+	case yaml.ScalarNode:
+		return Variable{Value: val.Value}, nil
+	case yaml.MappingNode:
+		var v Variable
+		for i := 0; i+1 < len(val.Content); i += 2 {
+			k, fv := val.Content[i], val.Content[i+1]
+			if k.Value != "from_env" {
+				return Variable{}, fmt.Errorf("line %d: variable %s: field %s は使えない｡値か `from_env` を書く", k.Line, name, k.Value)
+			}
+			v.FromEnv = fv.Value
+		}
+		if v.FromEnv == "" {
+			return Variable{}, fmt.Errorf("line %d: variable %s: from_env が空", val.Line, name)
+		}
+		return v, nil
+	default:
+		return Variable{}, fmt.Errorf("line %d: variable %s: 値か `from_env: <環境変数名>` で書く", val.Line, name)
+	}
+}
+
+// MarshalYAML writes a plain value as a scalar and from_env as a map.
+func (v Variable) MarshalYAML() (any, error) {
+	if v.FromEnv != "" {
+		return map[string]string{"from_env": v.FromEnv}, nil
+	}
+	return v.Value, nil
+}
+
+// ResolveEnv fills Value of every from_env variable with lookup(FromEnv).
+// 無い (空も含む) ものがあれば､全部を挙げてエラーにする｡
+func (vars Variables) ResolveEnv(lookup func(string) (string, bool)) error {
+	var errs []error
+	for _, name := range sortedKeys(vars) {
+		v := vars[name]
+		if v.FromEnv == "" {
+			continue
+		}
+		if value, ok := lookup(v.FromEnv); ok && value != "" {
+			v.Value = value
+			vars[name] = v
+			continue
+		}
+		errs = append(errs, fmt.Errorf("variable %s の環境変数 %s が無い", name, v.FromEnv))
+	}
+	return errors.Join(errs...)
+}
+
 // Secret is a secret whose value is read from an environment variable at apply time.
 type Secret struct {
 	FromEnv string `yaml:"from_env"`
@@ -161,10 +240,13 @@ func validateRepository(r Repository) []error {
 	return nil
 }
 
-func validateVariables(vars map[string]string) []error {
+func validateVariables(vars Variables) []error {
 	var errs []error
 	for _, name := range sortedKeys(vars) {
 		errs = append(errs, validateActionsName("variables", name))
+		if env := vars[name].FromEnv; env != "" && !envNamePattern.MatchString(env) {
+			errs = append(errs, fmt.Errorf("variables.%s.from_env: %q は環境変数名として使えない", name, env))
+		}
 	}
 	return errs
 }

@@ -80,7 +80,7 @@ func TestMinimize(t *testing.T) {
 		{
 			name: "scalar は書き方でなく値で比べる",
 			base: testBase + "variables:\n  GO_VERSION: 1.10\n",
-			live: func(s *Settings) { s.Variables = map[string]string{"GO_VERSION": "1.10"} },
+			live: func(s *Settings) { s.Variables = Variables{"GO_VERSION": {Value: "1.10"}} },
 			want: "{}\n",
 		},
 	}
@@ -97,7 +97,7 @@ func TestMinimize(t *testing.T) {
 			}
 			live := baseSettings()
 			if tt.base != "" {
-				live.Variables = map[string]string{"GO_VERSION": "1.10"}
+				live.Variables = Variables{"GO_VERSION": {Value: "1.10"}}
 			}
 			tt.live(live)
 

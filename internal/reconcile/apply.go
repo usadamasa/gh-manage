@@ -114,7 +114,7 @@ func createActions(desired *config.Settings) ([]Action, error) {
 	}
 	acts = append(acts, rulesetActions(desired, sortedKeys(desired.Rulesets), nil)...)
 	for _, name := range sortedKeys(desired.Variables) {
-		acts = append(acts, Action{Op: ActCreateVariable, Name: name, Value: desired.Variables[name]})
+		acts = append(acts, Action{Op: ActCreateVariable, Name: name, Value: desired.Variables[name].Value})
 	}
 	acts = append(acts, secretActions(KindSecret, nil, desired.Secrets)...)
 	return append(acts, secretActions(KindDependabotSecret, nil, desired.DependabotSecrets)...), nil
@@ -134,11 +134,11 @@ func rulesetActions(desired *config.Settings, upserts, deletes []string) []Actio
 // variableOps maps the Op of a variable Change to its write.
 var variableOps = map[Op]ActionOp{OpCreate: ActCreateVariable, OpUpdate: ActUpdateVariable, OpDelete: ActDeleteVariable}
 
-func variableActions(changes []Change, desired map[string]string) []Action {
+func variableActions(changes []Change, desired config.Variables) []Action {
 	var acts []Action
 	for _, c := range changes {
 		if c.Kind == "variable" {
-			acts = append(acts, Action{Op: variableOps[c.Op], Name: c.Name, Value: desired[c.Name]})
+			acts = append(acts, Action{Op: variableOps[c.Op], Name: c.Name, Value: desired[c.Name].Value})
 		}
 	}
 	return acts

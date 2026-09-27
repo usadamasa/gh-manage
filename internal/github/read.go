@@ -112,9 +112,9 @@ func (c *Client) readVariables(ctx context.Context, prefix string, s *config.Set
 		}
 		for _, v := range page.Variables {
 			if s.Variables == nil {
-				s.Variables = map[string]string{}
+				s.Variables = config.Variables{}
 			}
-			s.Variables[v.Name] = v.Value
+			s.Variables[v.Name] = config.Variable{Value: v.Value}
 		}
 		return nil
 	})

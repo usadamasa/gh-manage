@@ -186,7 +186,7 @@ func TestFetchSettings(t *testing.T) {
 				},
 			},
 		},
-		Variables: map[string]string{"GO_VERSION": "1.25"},
+		Variables: config.Variables{"GO_VERSION": {Value: "1.25"}},
 		Secrets:   config.Secrets{"TAGPR_PRIVATE_KEY": {FromEnv: "TAGPR_PRIVATE_KEY"}},
 	}
 	if !reflect.DeepEqual(got, want) {

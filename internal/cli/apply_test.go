@@ -137,6 +137,19 @@ func TestApplyCmd(t *testing.T) {
 			wantErr: "TOKEN",
 		},
 		{
+			name:      "from_env の variable は環境変数の値で作る",
+			files:     map[string]string{"base.yaml": "{}\n", "repos/a.yaml": "variables:\n  GO:\n    from_env: GO_VERSION\n"},
+			env:       map[string]string{"GO_VERSION": "1.27"},
+			args:      []string{"--yes"},
+			wantCalls: []string{`POST repos/o/a/actions/variables {"name":"GO","value":"1.27"}`},
+		},
+		{
+			name:    "from_env の variable の環境変数が無ければ 1 件も書かずに止める",
+			files:   map[string]string{"base.yaml": "{}\n", "repos/a.yaml": "repository:\n  has_wiki: true\nvariables:\n  GO:\n    from_env: GO_VERSION\n"},
+			args:    []string{"--yes"},
+			wantErr: "GO_VERSION",
+		},
+		{
 			name: "prune.secrets なら宣言していない secret を消す",
 			files: map[string]string{
 				"base.yaml":    "prune:\n  secrets: true\n",
@@ -168,6 +181,7 @@ func TestApplyCmd(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Setenv("TOKEN", "")
+			t.Setenv("GO_VERSION", "")
 			for k, v := range tt.env {
 				t.Setenv(k, v)
 			}

@@ -148,8 +148,8 @@ func (p *RepoPlan) planVariables(desired, live *config.Settings) {
 		switch {
 		case !ok:
 			p.add(Change{Op: OpCreate, Kind: "variable", Name: name})
-		case l != desired.Variables[name]:
-			p.add(Change{Op: OpUpdate, Kind: "variable", Name: name, Old: l, New: desired.Variables[name]})
+		case l.Value != desired.Variables[name].Value:
+			p.add(Change{Op: OpUpdate, Kind: "variable", Name: name, Old: l.Value, New: desired.Variables[name].Value})
 		}
 	}
 	for _, name := range sortedKeys(live.Variables) {

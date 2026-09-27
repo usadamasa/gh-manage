@@ -56,8 +56,10 @@ rulesets:                   # キーが ruleset の名前｡名前で upsert す
       - type: deletion
       - type: non_fast_forward
 topics: [go, cli]           # PUT /repos/{owner}/{repo}/topics で丸ごと置き換える
-variables:                  # Actions の variable｡値は平文で書く
+variables:                  # Actions の variable｡値は平文か from_env (plan / apply のときに環境変数から読む) で書く
   GO_VERSION: "1.24"
+  TAGPR_CLIENT_ID:
+    from_env: TAGPR_CLIENT_ID
 secrets:                    # 値は環境変数から読む｡受け付けるのは from_env だけで､平文の値は schema 検証で弾く
   TAGPR_PRIVATE_KEY:
     from_env: TAGPR_PRIVATE_KEY
@@ -95,6 +97,7 @@ go install github.com/usadamasa/gh-manage/cmd/gh-manage@latest
 - `--repo` を省くと自分が owner の全リポジトリを書き出す｡archived と fork は `--include-archived` / `--include-forks` を付けたときだけ含める
 - `--minimize` は base.yaml との差分だけを残す｡base にあって live に無いものは `null` で書くので､render すると live と同じになる
 - secret は値を読めないので名前だけ書き､`from_env` に同じ名前を入れる
+- variable は live の値を平文で書く｡環境変数から読ませたいものは手で `from_env` に書き換える
 - 最後に rate limit の残り (`X-RateLimit-Remaining`) を stderr に出す
 
 ### apply
@@ -103,6 +106,7 @@ go install github.com/usadamasa/gh-manage/cmd/gh-manage@latest
 - ruleset は名前で探して､あれば `PUT`､無ければ `POST` で宣言全体を書く｡削除は `prune.rulesets` のときだけ
 - 宣言があって GitHub に無いリポジトリは `POST /user/repos` (`auto_init: true`) で作り､続けて宣言した設定をすべて入れる
 - variable は無ければ `POST`､値が違えば `PATCH` する｡削除は `prune.variables` のときだけ
+- `from_env` の variable は plan の時点で環境変数から値を読む (値を比べるため)｡無い (空も含む) と plan も apply も止まる
 - secret (Actions / Dependabot) は宣言したものを差分の有無にかかわらず毎回書き直す｡
   リポジトリの公開鍵を取得し､`from_env` の環境変数の値を sealed box (`golang.org/x/crypto/nacl/box`) で封緘して `PUT` する｡
   値は plan にも出力にも出さず､書き直す secret の名前だけを確認の前に表示する｡削除は `prune.secrets` / `prune.dependabot_secrets` のときだけ
