@@ -4,7 +4,7 @@ aqua_version: ">=2.0.0"
 
 registries:
   - type: standard
-    ref: v4.448.1  # renovate: depName=aquaproj/aqua-registry
+    ref: v4.448.1 # renovate: depName=aquaproj/aqua-registry
   # 標準レジストリに無いパッケージ用｡定義は aqua/registry.yaml
   - name: local
     type: local
@@ -23,3 +23,4 @@ packages:
     registry: local
   - name: usadamasa/go-arch-metrics/analyze-modularity@2026.0919.3
     registry: local
+  - name: suzuki-shunsuke/pinact@v5.0.0
