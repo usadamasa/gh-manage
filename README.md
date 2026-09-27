@@ -134,6 +134,8 @@ fine-grained PAT 1 本で動く｡作り方は [docs/setup-token.md](docs/setup-
 | main への push | `apply` を実行する |
 | 毎週 | `plan` を実行し､手で変えた drift があれば失敗する |
 
+workflow は `.github/workflows/settings.yaml`｡secret の置き場所と job の詳細は [docs/setup-token.md](docs/setup-token.md#github-actions-で使う)｡
+
 ## 開発
 
 ### 前提

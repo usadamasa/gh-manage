@@ -62,3 +62,16 @@ gh secret set GH_MANAGE_TOKEN --repo usadamasa/gh-manage
 
 配布する secret の名前を settings に足したら､同じ名前で gh-manage の Actions secret にも値を置く｡
 workflow は secret を同名の環境変数として gh-manage に渡す｡
+
+workflow は `.github/workflows/settings.yaml`｡
+
+| トリガー | job | 使う secret |
+| --- | --- | --- |
+| `settings/**` を変える PR | Plan: plan を job summary と PR コメント (1 件を上書き) に出す｡差分 (exit 2) は成功扱い | `GH_MANAGE_TOKEN` |
+| main への push | Apply: `apply --yes` | `GH_MANAGE_TOKEN` と配布する secret |
+| 毎週月曜 09:00 JST と手動実行 | Drift: plan｡差分 (exit 2) があれば失敗する | `GH_MANAGE_TOKEN` |
+
+- `settings/base.yaml` が無い間 (bootstrap 前) は､どの job も何もせずに成功する
+- fork からの PR には secret が渡らないので Plan を走らせない
+- PR コメントは workflow の `GITHUB_TOKEN` で書く (PAT は使わない)
+- 配布する secret を足したら､workflow の Apply の `env` にも同じ名前で足す

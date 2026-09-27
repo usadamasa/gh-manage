@@ -1,0 +1,164 @@
+name: Settings
+
+# settings/ の宣言を GitHub に反映する GitOps｡
+#   PR          plan を job summary と PR コメントに出す｡差分 (exit 2) は成功扱い
+#   main push   apply --yes
+#   weekly      plan｡差分 (exit 2) で失敗させ､手で変えた drift を知らせる
+# settings/ がまだ無い間 (bootstrap 前) は何もしない｡
+"on":
+  pull_request:
+    paths:
+      - settings/**
+      - .github/workflows/settings.yaml
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * 1" # 毎週月曜 09:00 JST
+  workflow_dispatch:
+
+# apply と drift は main の 1 列に並べ､途中で止めない｡PR の plan は新しい push で置き換える｡
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    name: Plan
+    # fork からの PR には GH_MANAGE_TOKEN が渡らないので走らせない
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+
+      - name: Plan
+        id: plan
+        env:
+          GH_TOKEN: ${{ secrets.GH_MANAGE_TOKEN }}
+        run: |
+          if [ ! -f settings/base.yaml ]; then
+            echo "settings/base.yaml が無いので plan しない" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          go build -o bin/gh-manage ./cmd/gh-manage
+          set +e
+          ./bin/gh-manage plan > plan.txt 2>&1
+          code=$?
+          set -e
+          cat plan.txt
+          case "$code" in
+            0) result="差分なし" ;;
+            2) result="差分あり" ;;
+            *) result="エラー (exit $code)" ;;
+          esac
+          {
+            echo "## gh-manage plan: $result"
+            echo
+            echo '```'
+            # PR コメントの上限 (65536 文字) に収める
+            head -c 60000 plan.txt
+            echo '```'
+          } > comment.md
+          cat comment.md >> "$GITHUB_STEP_SUMMARY"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on the PR
+        if: steps.plan.outputs.code != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file comment.md --edit-last --create-if-none
+
+      - name: Fail on error
+        if: steps.plan.outputs.code != '' && steps.plan.outputs.code != '0' && steps.plan.outputs.code != '2'
+        run: exit 1
+
+  apply:
+    name: Apply
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+
+      - name: Apply
+        env:
+          GH_TOKEN: ${{ secrets.GH_MANAGE_TOKEN }}
+          # 配布する secret の値｡settings の from_env と同じ名前で渡す
+          TAGPR_PRIVATE_KEY: ${{ secrets.TAGPR_PRIVATE_KEY }}
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+        run: |
+          if [ ! -f settings/base.yaml ]; then
+            echo "settings/base.yaml が無いので apply しない" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          go build -o bin/gh-manage ./cmd/gh-manage
+          set +e -o pipefail
+          ./bin/gh-manage apply --yes 2>&1 | tee apply.txt
+          code=$?
+          set -e
+          {
+            echo "## gh-manage apply (exit $code)"
+            echo
+            echo '```'
+            cat apply.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$code"
+
+  drift:
+    name: Drift
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+
+      - name: Plan
+        env:
+          GH_TOKEN: ${{ secrets.GH_MANAGE_TOKEN }}
+        run: |
+          if [ ! -f settings/base.yaml ]; then
+            echo "settings/base.yaml が無いので plan しない" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          go build -o bin/gh-manage ./cmd/gh-manage
+          set +e
+          ./bin/gh-manage plan > plan.txt 2>&1
+          code=$?
+          set -e
+          cat plan.txt
+          {
+            echo "## gh-manage plan (drift, exit $code)"
+            echo
+            echo '```'
+            cat plan.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          # 0 = 差分なし｡2 (drift) も 1 (エラー) も失敗にする
+          exit "$code"
