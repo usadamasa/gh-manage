@@ -1,30 +1,7 @@
-rulesets:
-  main:
-    rules:
-      - type: deletion
-      - type: non_fast_forward
-      - type: pull_request
-        parameters:
-          allowed_merge_methods:
-            - merge
-            - squash
-            - rebase
-          dismiss_stale_reviews_on_push: false
-          require_code_owner_review: false
-          require_extra_approval_for_unattributed_changes: true
-          require_last_push_approval: false
-          required_approving_review_count: 0
-          required_review_thread_resolution: false
-          required_reviewers: []
-      - type: required_status_checks
-        parameters:
-          do_not_enforce_on_create: true
-          required_status_checks:
-            - context: ci-status-check
-              integration_id: 15368
-          strict_required_status_checks_policy: false
+# repository と rulesets は base のまま｡ruleset の allowed_merge_methods と do_not_enforce_on_create は base に合わせる (bootstrap の drift 修正)
 variables:
-  TAGPR_CLIENT_ID: Iv23liqxSJK4kOrLJFj4
+  TAGPR_CLIENT_ID:
+    from_env: TAGPR_CLIENT_ID
 secrets:
   TAGPR_PRIVATE_KEY:
     from_env: TAGPR_PRIVATE_KEY
