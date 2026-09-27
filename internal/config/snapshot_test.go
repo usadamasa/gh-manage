@@ -78,6 +78,15 @@ func TestMinimize(t *testing.T) {
 			want: "rulesets:\n  main:\n    rules:\n      - type: deletion\n",
 		},
 		{
+			name: "rule の parameters の null は値として残す",
+			live: func(s *Settings) {
+				rs := s.Rulesets["main"]
+				rs.Rules = []Rule{{Type: "code_coverage", Parameters: map[string]any{"minimum_coverage": nil}}}
+				s.Rulesets["main"] = rs
+			},
+			want: "rulesets:\n  main:\n    rules:\n      - type: code_coverage\n        parameters:\n          minimum_coverage: null\n",
+		},
+		{
 			name: "scalar は書き方でなく値で比べる",
 			base: testBase + "variables:\n  GO_VERSION: 1.10\n",
 			live: func(s *Settings) { s.Variables = Variables{"GO_VERSION": {Value: "1.10"}} },

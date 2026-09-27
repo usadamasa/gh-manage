@@ -80,6 +80,12 @@ func TestMerge(t *testing.T) {
 			want:    "rules:\n  - type: pull_request\n",
 		},
 		{
+			name:    "list の中の null は削除でなく値として残す",
+			base:    "rules:\n  - type: deletion\n",
+			overlay: "rules:\n  - type: code_coverage\n    parameters:\n      minimum_coverage: null\n",
+			want:    "rules:\n  - type: code_coverage\n    parameters:\n      minimum_coverage: null\n",
+		},
+		{
 			name:    "prune は overlay の値で上書きする",
 			base:    "prune:\n  rulesets: false\n  secrets: true\n",
 			overlay: "prune:\n  rulesets: true\n",
