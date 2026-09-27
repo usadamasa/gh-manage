@@ -60,8 +60,8 @@ func TestYAMLLines(t *testing.T) {
 		{"list", []string{"cli", "go"}, []string{"- cli", "- go"}},
 		{
 			"map のキーは並べ替えて 2 桁で字下げする",
-			map[string]any{"type": "pull_request", "parameters": map[string]any{"n": 1}},
-			[]string{"parameters:", "  n: 1", "type: pull_request"},
+			map[string]any{"type": "pull_request", "parameters": map[string]any{"count": 1}},
+			[]string{"parameters:", "  count: 1", "type: pull_request"},
 		},
 	}
 	for _, tt := range tests {

@@ -1,5 +1,5 @@
 topics:
   ~ update topics:
-       - cli
--      - github
-+      - go
+      - cli
+-     - github
++     - go
