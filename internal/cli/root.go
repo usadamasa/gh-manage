@@ -19,6 +19,10 @@ computes the difference, and applies only what changed.`,
 		SilenceErrors: true,
 	}
 	root.SetVersionTemplate("{{.Name}} {{.Version}}\n")
+
+	var settingsDir string
+	root.PersistentFlags().StringVar(&settingsDir, "settings", "settings", "directory that holds base.yaml and repos/")
+	root.AddCommand(newRenderCmd(&settingsDir))
 	return root
 }
 

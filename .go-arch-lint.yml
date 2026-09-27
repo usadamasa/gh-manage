@@ -5,28 +5,41 @@ workdir: .
 excludeFiles:
   - ".*_test\\.go$"
 
-# 依存の向き: entry (cmd/*) → internal｡逆向きは禁止｡
-# 今は internal が cli / log / version の 3 パッケージだけなので 1 つの役割にまとめている｡
-# 後続 step でパッケージが増えたら役割ごとに切る (設定自体の健全性は analyze-arch-lint --strict . が見る):
-#   cli       internal/cli       cobra のコマンド定義 (entry 以外から import しない)
-#   config    internal/config    設定の読み込みと base + overlay の合成
-#   github    internal/github    GitHub API クライアント (go-gh はここだけが import する)
-#   reconcile internal/reconcile plan / apply の差分計算と適用
-#   shared    internal/log, internal/version
+# 依存の向き: entry → domain､shared はどこからでも使える｡逆向きは禁止｡
+# component はパッケージ単位ではなく役割単位で切る (analyze-arch-lint が singleton の多さを咎める)｡
+#   entry   cmd/*, internal/cli  エントリポイントと cobra のコマンド定義
+#   domain  internal/config      設定の読み込みと base + overlay の合成 (後続 step で internal/reconcile も入る)
+#   shared  internal/log, internal/version
+# internal/github (go-gh はここだけが import する) は step 3 で component を足す｡
 components:
   entry:
-    in: cmd/*
-  internal:
-    in: internal/**
+    in:
+      - cmd/*
+      - internal/cli
+  domain:
+    in:
+      - internal/config
+  shared:
+    in:
+      - internal/log
+      - internal/version
 
 vendors:
   cobra:
     in: github.com/spf13/cobra
+  yaml:
+    in: go.yaml.in/yaml/v3
+
+commonComponents:
+  - shared
 
 deps:
   entry:
     mayDependOn:
-      - internal
-  internal:
+      - entry  # cmd/* → internal/cli
+      - domain
     canUse:
       - cobra
+  domain:
+    canUse:
+      - yaml
