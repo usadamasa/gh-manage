@@ -10,9 +10,10 @@ gh-manage は､自分 (usadamasa) が保有する GitHub リポジトリの設�
 ├── cmd/gh-manage/      # エントリポイント (main)
 ├── internal/
 │   ├── cli/            # cobra のコマンド定義
+│   ├── config/         # settings/ の読み込み､schema 検証､base + overlay の合成
 │   ├── log/            # 標準出力への出力 (forbidigo 対応)
 │   └── version/        # バージョン解決
-├── settings/           # 管理対象の宣言 (base.yaml + repos/<name>.yaml)｡step 2 以降で作る
+├── settings/           # 管理対象の宣言 (base.yaml + repos/<name>.yaml)｡step 3 の snapshot で作る
 ├── docs/               # セットアップ手順
 └── Taskfile.yaml
 ```

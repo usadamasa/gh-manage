@@ -25,8 +25,12 @@ settings/
 overlay は base に deep merge する｡
 
 - map は再帰的に merge する
-- `null` を書くと base のキーを削除する
-- list は丸ごと置き換える (ruleset の `rules` に 1 つ足すときも､overlay で list 全体を書く)
+- `null` を書くと base のキーを削除する (`secrets: {FOO: null}` で base の secret FOO を外す)
+- list は丸ごと置き換える｡ruleset の `rules` に 1 つ足すときも､overlay で list 全体を書き直す
+- `prune` も同じ規則で解決する｡既定は false で､base → overlay の順に上書きする
+
+schema に無いキーはエラーにする (typo を apply の前に止める)｡`repository.name` は rename を防ぐため受け付けない｡
+合成結果は `gh-manage render [name]` で確認できる｡
 
 ```yaml
 # settings/base.yaml
@@ -51,9 +55,15 @@ rulesets:                   # キーが ruleset の名前｡名前で upsert す
     rules:                  # REST API の rules[] をそのまま書く
       - type: deletion
       - type: non_fast_forward
+topics: [go, cli]           # PUT /repos/{owner}/{repo}/topics で丸ごと置き換える
+variables:                  # Actions の variable｡値は平文で書く
+  GO_VERSION: "1.24"
 secrets:                    # 値は環境変数から読む｡受け付けるのは from_env だけで､平文の値は schema 検証で弾く
   TAGPR_PRIVATE_KEY:
     from_env: TAGPR_PRIVATE_KEY
+dependabot_secrets:         # Dependabot の secret｡書き方は secrets と同じ
+  NPM_TOKEN:
+    from_env: NPM_TOKEN
 ```
 
 ```yaml
@@ -75,7 +85,7 @@ go install github.com/usadamasa/gh-manage/cmd/gh-manage@latest
 
 | コマンド | 役割 |
 | --- | --- |
-| `gh-manage render [name]` | base と overlay を合成した desired state を表示する |
+| `gh-manage render [name]` | base と overlay を合成した desired state を表示する｡name を省くと全リポジトリを名前の順に出す |
 | `gh-manage plan` | live を読んで差分を出す｡差分があれば exit 2 |
 | `gh-manage apply [--yes]` | plan の結果を適用する |
 | `gh-manage snapshot [--repo name] [--minimize]` | live を overlay の形で書き出す (管理下に入れるとき) |
