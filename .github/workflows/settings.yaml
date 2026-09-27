@@ -69,7 +69,8 @@ jobs:
           {
             echo "## gh-manage plan: $result"
             echo
-            echo '```'
+            # list / map の変更は行頭 +/- の diff で出るので､diff として色を付ける
+            echo '```diff'
             # PR コメントの上限 (65536 文字) に収める
             head -c 60000 plan.txt
             echo '```'
@@ -162,7 +163,7 @@ jobs:
           {
             echo "## gh-manage plan (drift, exit $code)"
             echo
-            echo '```'
+            echo '```diff'
             cat plan.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"

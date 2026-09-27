@@ -1,2 +1,5 @@
 topics:
-  ~ update topics: ["cli","github"] -> ["cli","go"]
+  ~ update topics:
+      - cli
+-     - github
++     - go
