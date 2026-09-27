@@ -1,8 +1,8 @@
 # fine-grained PAT の作り方
 
 gh-manage は fine-grained personal access token (PAT) 1 本で動く｡GitHub App は要らない｡
-リポジトリの作成 (`POST /user/repos`) は fine-grained PAT の "Repository creation" 権限で呼べることを
-GitHub Docs (fine-grained PAT の権限表) で確認している｡GitHub App の installation token での作成は
+リポジトリの作成 (`POST /user/repos`) も fine-grained PAT で呼べる｡作成の権限は独立した項目ではなく
+Administration に含まれる (作成画面の説明は "Repository creation, deletion, settings, teams, and collaborators"､2026-09 に確認)｡GitHub App の installation token での作成は
 評価していない｡
 
 ## 作成手順
@@ -20,12 +20,11 @@ Repository permissions は次のとおり付ける｡
 
 | Permission | Access | 使う場所 |
 | --- | --- | --- |
-| Administration | Read and write | 一般設定の PATCH､ruleset の作成と更新 |
+| Administration | Read and write | リポジトリの作成 (`POST /user/repos`)､一般設定の PATCH､ruleset の作成と更新 |
 | Metadata | Read-only | (自動で付く) |
 | Secrets | Read and write | Actions の secret |
 | Variables | Read and write | Actions の variable |
 | Dependabot secrets | Read and write | Dependabot の secret |
-| Repository creation | Read and write | `POST /user/repos` (付けなくても作成以外の操作は動く) |
 
 Generate token を押し､値を控える (再表示できない)｡
 
