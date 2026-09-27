@@ -138,7 +138,7 @@ stateless で個人アカウントに対応し、一般設定・ruleset・secret
 | github/safe-settings, eclipse-csi/otterdog | organization 専用 |
 | repository-settings/app (Probot Settings) | ruleset と secret を扱えない |
 | noirbizarre/gh-settings | secret を扱えない |
-| Vivswan/github-settings-as-code | 機能は揃うが OSI 準拠でないライセンス、開始 2 ヶ月・単独メンテ |
+| Vivswan/github-settings-as-code | 機能は揃うが OSI 準拠でないライセンス、開始 2 ヶ月・単独メンテ (動作は試していない) |
 
 ## License
 
