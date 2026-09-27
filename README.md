@@ -73,9 +73,6 @@ dependabot_secrets:         # Dependabot の secret｡書き方は secrets と�
 # settings/repos/agents-config.yaml
 repository:
   visibility: private
-secrets:
-  COPILOT_GITHUB_TOKEN:
-    from_env: COPILOT_GITHUB_TOKEN
 ```
 
 ## インストール
