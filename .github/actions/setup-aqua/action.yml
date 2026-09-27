@@ -5,18 +5,18 @@ inputs:
   aqua_version:
     description: 'Version of Aqua to install'
     required: false
-    default: 'v2.53.3'
+    default: 'v2.63.0'
 
 runs:
   using: 'composite'
   steps:
     - name: Install Aqua
-      uses: aquaproj/aqua-installer@5e54e5cee8a95ee2ce7c04cb993da6dfad13e59c # v3.1.2
+      uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e # v4.0.5
       with:
         aqua_version: ${{ inputs.aqua_version }}
 
     - name: Cache Aqua tools
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.local/share/aquaproj-aqua
         key: ${{ runner.os }}-aqua-${{ hashFiles('aqua.yaml') }}-${{ hashFiles('aqua/registry.yaml') }}

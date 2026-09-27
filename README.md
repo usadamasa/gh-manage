@@ -123,7 +123,7 @@ fine-grained PAT 1 本で動く｡作り方は [docs/setup-token.md](docs/setup-
 
 ### 前提
 
-- Go 1.25 以上
+- Go 1.27 以上
 - [aqua](https://aquaproj.github.io/) (ツールのバージョン固定)
 - [direnv](https://direnv.net/) (任意｡`.envrc` が PATH と aqua の policy を通す)
 
