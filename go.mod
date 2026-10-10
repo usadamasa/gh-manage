@@ -2,7 +2,7 @@ module github.com/usadamasa/gh-manage
 
 go 1.27.0
 
-toolchain go1.27.1
+toolchain go1.27.2
 
 require (
 	github.com/cli/go-gh/v2 v2.16.1
