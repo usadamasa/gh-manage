@@ -2,10 +2,10 @@ rulesets:
   ~ update ruleset main.enforcement: "evaluate" -> "active"
   ~ update ruleset main.rules:
       - type: deletion
--     - type: non_fast_forward
       - parameters:
 -         required_approving_review_count: 0
 +         required_approving_review_count: 1
         type: pull_request
+-     - type: non_fast_forward
   + create ruleset tags
   ! ruleset legacy は宣言されていない (prune.rulesets: false なので残す)

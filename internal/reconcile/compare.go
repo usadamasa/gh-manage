@@ -1,9 +1,11 @@
 package reconcile
 
 import (
+	"cmp"
 	"encoding/json"
 	"maps"
 	"reflect"
+	"slices"
 )
 
 // asMap converts v to its JSON form (map[string]any, []any, float64, string, bool, nil).
@@ -93,8 +95,10 @@ func narrow(desired, live any) any {
 	}
 }
 
-// narrowRules narrows the parameters of each live rule by the desired rule of the same type.
-// desired に parameters が無い rule と desired に無い type は rulesEqual が差分にするので､live のまま残す｡並び順も変えない｡
+// narrowRules narrows the parameters of each live rule by the desired rule of the same type,
+// and orders the rules as desired does so that the diff shows only parameter changes.
+// desired に parameters が無い rule と desired に無い type は rulesEqual が差分にするので live のまま残し､
+// desired に無い type は live の順で末尾に回す｡
 func narrowRules(desired, live any) any {
 	l, ok := live.([]any)
 	if !ok {
@@ -102,10 +106,22 @@ func narrowRules(desired, live any) any {
 	}
 	d, _ := desired.([]any)
 	paramsByType := map[any]any{}
-	for _, r := range d {
-		if m, ok := r.(map[string]any); ok && m["parameters"] != nil {
-			paramsByType[m["type"]] = m["parameters"]
+	rank := map[any]int{}
+	for i, r := range d {
+		if m, ok := r.(map[string]any); ok {
+			rank[m["type"]] = i
+			if m["parameters"] != nil {
+				paramsByType[m["type"]] = m["parameters"]
+			}
 		}
+	}
+	rankOf := func(r any) int {
+		if m, ok := r.(map[string]any); ok {
+			if i, found := rank[m["type"]]; found {
+				return i
+			}
+		}
+		return len(d)
 	}
 	out := make([]any, len(l))
 	for i, r := range l {
@@ -123,6 +139,7 @@ func narrowRules(desired, live any) any {
 		rule["parameters"] = narrow(dp, lp)
 		out[i] = rule
 	}
+	slices.SortStableFunc(out, func(a, b any) int { return cmp.Compare(rankOf(a), rankOf(b)) })
 	return out
 }
 
