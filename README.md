@@ -115,6 +115,8 @@ go install github.com/usadamasa/gh-manage/cmd/gh-manage@latest
 
 - 宣言したキーが live と一致していれば同じとみなす｡live 側にだけあるキー (server が埋める既定値など) は無視する
 - ruleset の `rules` は `type` で対応付けて `parameters` を同じ規則で比べる｡list 全体を宣言するので､live にだけある type は差分になる
+- list / map の update は YAML の diff で出す｡old 側 (`--format json` の `old` も) は判定に使ったキーだけに絞るので､
+  live にだけあるキーは `-` 行に出ない
 - 出力はリポジトリごとに `+ create` / `~ update (key: old -> new)` / `- delete` / `= no change`｡宣言されていないものは `!` の notice
 - 宣言があって GitHub に無いリポジトリは create､archived のリポジトリは skip する
 - secret は API が値を返さないので有無だけ比較する｡apply では宣言した secret を毎回暗号化して書き直す

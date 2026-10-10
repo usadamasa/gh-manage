@@ -2,6 +2,7 @@ package reconcile
 
 import (
 	"encoding/json"
+	"maps"
 	"reflect"
 )
 
@@ -59,6 +60,69 @@ func listSubset(desired, live []any) bool {
 		}
 	}
 	return true
+}
+
+// narrow returns live with the keys that subset does not look at removed, so that a diff shows only what the comparison saw.
+// 範囲は subset と同じ: map は desired に無いキーを落とし､list は長さが同じときだけ要素ごとに絞る｡
+func narrow(desired, live any) any {
+	switch d := desired.(type) {
+	case map[string]any:
+		l, ok := live.(map[string]any)
+		if !ok {
+			return live
+		}
+		out := make(map[string]any, len(d))
+		for k, dv := range d {
+			if lv, found := l[k]; found {
+				out[k] = narrow(dv, lv)
+			}
+		}
+		return out
+	case []any:
+		l, ok := live.([]any)
+		if !ok || len(d) != len(l) {
+			return live
+		}
+		out := make([]any, len(l))
+		for i := range l {
+			out[i] = narrow(d[i], l[i])
+		}
+		return out
+	default:
+		return live
+	}
+}
+
+// narrowRules narrows the parameters of each live rule by the desired rule of the same type.
+// desired に parameters が無い rule と desired に無い type は rulesEqual が差分にするので､live のまま残す｡並び順も変えない｡
+func narrowRules(desired, live any) any {
+	l, ok := live.([]any)
+	if !ok {
+		return live
+	}
+	d, _ := desired.([]any)
+	paramsByType := map[any]any{}
+	for _, r := range d {
+		if m, ok := r.(map[string]any); ok && m["parameters"] != nil {
+			paramsByType[m["type"]] = m["parameters"]
+		}
+	}
+	out := make([]any, len(l))
+	for i, r := range l {
+		out[i] = r
+		m, ok := r.(map[string]any)
+		if !ok {
+			continue
+		}
+		dp, found := paramsByType[m["type"]]
+		if !found {
+			continue
+		}
+		rule := maps.Clone(m)
+		rule["parameters"] = narrow(dp, m["parameters"])
+		out[i] = rule
+	}
+	return out
 }
 
 // rulesEqual matches rules by type and compares their parameters with subset.

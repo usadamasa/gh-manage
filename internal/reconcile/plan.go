@@ -126,12 +126,12 @@ func (p *RepoPlan) planRulesets(desired, live *config.Settings) {
 			if !declared {
 				continue
 			}
-			equal := subset(dv, lg[key])
+			equal, old := subset(dv, lg[key]), narrow(dv, lg[key])
 			if key == "rules" {
-				equal = rulesEqual(dv, lg[key])
+				equal, old = rulesEqual(dv, lg[key]), narrowRules(dv, lg[key])
 			}
 			if !equal {
-				p.add(Change{Op: OpUpdate, Kind: "ruleset", Name: name, Key: key, Old: lg[key], New: dv})
+				p.add(Change{Op: OpUpdate, Kind: "ruleset", Name: name, Key: key, Old: old, New: dv})
 			}
 		}
 	}
