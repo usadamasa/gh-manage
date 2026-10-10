@@ -1,0 +1,7 @@
+bypass_actors:
+  ~ update ruleset main.bypass_actors:
+      - actor_id: 5
+        actor_type: RepositoryRole
+-     - actor_id: 11
++     - actor_id: 10
+        actor_type: Integration
