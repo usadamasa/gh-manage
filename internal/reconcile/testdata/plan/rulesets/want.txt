@@ -5,7 +5,6 @@ rulesets:
 -     - type: non_fast_forward
       - parameters:
 -         required_approving_review_count: 0
--         required_reviewers: []
 +         required_approving_review_count: 1
         type: pull_request
   + create ruleset tags
