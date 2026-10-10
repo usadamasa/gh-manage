@@ -85,6 +85,12 @@ func TestNarrowRules(t *testing.T) {
 			[]any{rule("deletion", nil), rule("non_fast_forward", nil), rule("pull_request", map[string]any{"count": 0, "r": 1})},
 			[]any{rule("deletion", nil), rule("non_fast_forward", nil), rule("pull_request", map[string]any{"count": 0})},
 		},
+		{
+			"live に parameters が無ければ足さない",
+			[]any{rule("pull_request", map[string]any{"count": 1})},
+			[]any{rule("pull_request", nil)},
+			[]any{rule("pull_request", nil)},
+		},
 		{"live が list でなければそのまま返す", []any{rule("deletion", nil)}, nil, nil},
 	}
 	for _, tt := range tests {

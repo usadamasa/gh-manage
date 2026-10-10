@@ -115,11 +115,12 @@ func narrowRules(desired, live any) any {
 			continue
 		}
 		dp, found := paramsByType[m["type"]]
-		if !found {
+		lp, has := m["parameters"]
+		if !found || !has {
 			continue
 		}
 		rule := maps.Clone(m)
-		rule["parameters"] = narrow(dp, m["parameters"])
+		rule["parameters"] = narrow(dp, lp)
 		out[i] = rule
 	}
 	return out
