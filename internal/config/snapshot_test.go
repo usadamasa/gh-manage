@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
+	"strings"
 	"testing"
 )
 
@@ -92,6 +94,18 @@ func TestMinimize(t *testing.T) {
 			live: func(s *Settings) { s.Variables = Variables{"GO_VERSION": {Value: "1.10"}} },
 			want: "{}\n",
 		},
+		{
+			name: "managed_topic は overlay に null で書かず､live の topics からも除く",
+			base: testBase + "managed_topic: gh-managed\n",
+			live: func(s *Settings) { s.Topics = []string{"gh-managed", "go"} },
+			want: "topics:\n  - go\n",
+		},
+		{
+			name: "live の topics が marker だけなら topics を書かない",
+			base: testBase + "managed_topic: gh-managed\n",
+			live: func(s *Settings) { s.Topics = []string{"gh-managed"} },
+			want: "{}\n",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -105,7 +119,7 @@ func TestMinimize(t *testing.T) {
 				t.Fatalf("Load() error = %v", err)
 			}
 			live := baseSettings()
-			if tt.base != "" {
+			if strings.Contains(tt.base, "GO_VERSION") {
 				live.Variables = Variables{"GO_VERSION": {Value: "1.10"}}
 			}
 			tt.live(live)
@@ -130,8 +144,9 @@ func TestMinimize(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Render() error = %v", err)
 			}
-			normalize(live)
-			normalize(rendered)
+			// marker は render でなく plan が足すので､比較からは外す
+			normalize(live, cfg.ManagedTopic())
+			normalize(rendered, cfg.ManagedTopic())
 			if !reflect.DeepEqual(rendered, live) {
 				t.Errorf("Render(Minimize(live)) =\n%#v\nwant\n%#v", rendered, live)
 			}
@@ -139,12 +154,17 @@ func TestMinimize(t *testing.T) {
 	}
 }
 
-// normalize treats empty and nil collections as the same, as YAML does.
-func normalize(s *Settings) {
+// normalize treats empty and nil collections as the same, as YAML does, and drops the marker topic.
+func normalize(s *Settings, marker string) {
 	if len(s.Secrets) == 0 {
 		s.Secrets = nil
 	}
 	if len(s.Rulesets) == 0 {
 		s.Rulesets = nil
+	}
+	s.ManagedTopic = ""
+	s.Topics = slices.DeleteFunc(slices.Clone(s.Topics), func(t string) bool { return t == marker })
+	if len(s.Topics) == 0 {
+		s.Topics = nil
 	}
 }

@@ -1,0 +1,4 @@
+managed_topic:
+  ~ update topics:
++     - gh-managed
+      - go

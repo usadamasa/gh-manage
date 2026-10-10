@@ -1,0 +1,5 @@
+managed_topic_declared:
+  ~ update topics:
+      - cli
+-     - old
++     - gh-managed
