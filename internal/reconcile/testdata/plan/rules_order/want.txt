@@ -1,0 +1,7 @@
+rules_order:
+  ~ update ruleset main.rules:
+      - parameters:
+-         required_approving_review_count: 0
++         required_approving_review_count: 1
+        type: pull_request
+      - type: deletion
