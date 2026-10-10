@@ -1,9 +1,3 @@
 # repository は visibility だけ base と違う｡rulesets は base のまま
 repository:
   visibility: private
-variables:
-  TAGPR_CLIENT_ID:
-    from_env: TAGPR_CLIENT_ID
-secrets:
-  TAGPR_PRIVATE_KEY:
-    from_env: TAGPR_PRIVATE_KEY
