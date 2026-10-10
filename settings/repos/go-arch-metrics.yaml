@@ -15,9 +15,3 @@ rulesets:
           required_approving_review_count: 0
           required_review_thread_resolution: false
           required_reviewers: []
-variables:
-  TAGPR_CLIENT_ID:
-    from_env: TAGPR_CLIENT_ID
-secrets:
-  TAGPR_PRIVATE_KEY:
-    from_env: TAGPR_PRIVATE_KEY

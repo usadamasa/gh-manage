@@ -59,3 +59,10 @@ rulesets:
             - context: ci-status-check
               integration_id: 15368
           strict_required_status_checks_policy: false
+# tagpr の GitHub App の認証情報｡tagpr の workflow が vars.TAGPR_CLIENT_ID と secrets.TAGPR_PRIVATE_KEY を参照する
+variables:
+  TAGPR_CLIENT_ID:
+    from_env: TAGPR_CLIENT_ID
+secrets:
+  TAGPR_PRIVATE_KEY:
+    from_env: TAGPR_PRIVATE_KEY

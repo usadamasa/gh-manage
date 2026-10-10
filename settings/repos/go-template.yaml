@@ -25,6 +25,3 @@ rulesets:
           required_status_checks:
             - context: ci-status-check
           strict_required_status_checks_policy: false
-secrets:
-  TAGPR_PRIVATE_KEY:
-    from_env: TAGPR_PRIVATE_KEY

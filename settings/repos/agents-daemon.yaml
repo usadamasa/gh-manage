@@ -1,7 +1,2 @@
 # repository と rulesets は base のまま｡has_projects は base に合わせて off にする (bootstrap の drift 修正)
-variables:
-  TAGPR_CLIENT_ID:
-    from_env: TAGPR_CLIENT_ID
-secrets:
-  TAGPR_PRIVATE_KEY:
-    from_env: TAGPR_PRIVATE_KEY
+{}
