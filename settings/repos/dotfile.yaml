@@ -1,0 +1,20 @@
+# CI が無いので ruleset は required_status_checks を付けない｡include: [] (何も守っていない) は base の ~DEFAULT_BRANCH に直し､
+# rules を deletion だけから base と同じ 3 つに広げる｡merge 方式と allow_auto_merge は base に合わせる (bootstrap の drift 修正)
+repository:
+  description: dotfiles of vim,bash,and more...
+rulesets:
+  main:
+    rules:
+      - type: deletion
+      - type: non_fast_forward
+      - type: pull_request
+        parameters:
+          allowed_merge_methods:
+            - merge
+          dismiss_stale_reviews_on_push: false
+          require_code_owner_review: false
+          require_extra_approval_for_unattributed_changes: true
+          require_last_push_approval: false
+          required_approving_review_count: 0
+          required_review_thread_resolution: false
+          required_reviewers: []

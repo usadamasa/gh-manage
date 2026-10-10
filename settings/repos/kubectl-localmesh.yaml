@@ -1,0 +1,6 @@
+# repository は description だけ base と違う｡rulesets は base のまま (snapshot では rules の並び順だけ違った)
+repository:
+  description: kubectl localmesh is a local-only pseudo service mesh built on kubectl port-forward.
+secrets:
+  TAGPR_PRIVATE_KEY:
+    from_env: TAGPR_PRIVATE_KEY

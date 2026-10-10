@@ -1,0 +1,2 @@
+# repository と rulesets は base のまま｡has_projects / has_wiki は base に合わせて off にする (bootstrap の drift 修正)
+{}
