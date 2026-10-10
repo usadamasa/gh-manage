@@ -15,7 +15,8 @@ gh-manage は desired (settings/) と live (GitHub API) を毎回比べる state
 
 - `--repo` を省くと自分が owner の全リポジトリを書き出す。archived と fork は `--include-archived` /
   `--include-forks` を付けたときだけ含める
-- `--minimize` は base.yaml との差分だけを残す。base にあって live に無いものは `null` で書くので、render すると live と同じになる
+- `--minimize` は base.yaml との差分だけを残す。base にあって live に無いものは `null` で書くので、render すると live と同じになる。
+  base の `managed_topic` の topic は plan が足すものなので、live の topics にあっても overlay には書かない
 - secret は値を読めないので名前だけ書き、`from_env` に同じ名前を入れる
 - variable は live の値を平文で書く。環境変数から読ませたいものは手で `from_env` に書き換える
 - 最後に rate limit の残り (`X-RateLimit-Remaining`) を stderr に出す
@@ -41,6 +42,8 @@ gh-manage は desired (settings/) と live (GitHub API) を毎回比べる state
 `gh-manage plan [--format text|json]` は live を読んで差分を出す。exit 0 = 差分なし、2 = 差分あり、1 = エラー。
 
 - 宣言したキーが live と一致していれば同じとみなす。live 側にだけあるキー (server が埋める既定値など) は無視する
+- base の `managed_topic` があれば、topics の desired はその topic を含む。`topics` を宣言していないリポジトリでは
+  live の topics に足した形が desired になるので、plan には marker の `+` 行だけが出る
 - ruleset の `rules` は `type` で対応付けて `parameters` を同じ規則で比べる。
   list 全体を宣言するので、live にだけある type は差分になる
 - list / map の update は YAML の diff で出す。old 側 (`--format json` の `old` も) は判定に使ったキーだけに絞るので、
@@ -57,6 +60,7 @@ gh-manage は desired (settings/) と live (GitHub API) を毎回比べる state
 | 見え方 | 実際 |
 | ---- | ---- |
 | plan に出ないキーが live にある | desired に書いていないキーは比べない。管理したいなら desired に書く |
+| `render` の topics に `managed_topic` の topic が無い | marker は plan が live を見て足す。render は宣言した topics だけを出す |
 | secret が毎回「変更なし」なのに apply で書き直される | 値を比べられないので、宣言した secret は常に書き直す仕様 |
 | 宣言していない variable が消えない | `prune.variables` が false。notice (`!`) に出るだけで削除しない |
 | `rules` の diff の並びが live と違う | 判定は type で突き合わせるので並び順は差分にならない。表示では old 側を desired の順に並べ、desired に無い type を末尾に回す |

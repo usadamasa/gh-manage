@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"slices"
 
 	"go.yaml.in/yaml/v3"
 )
@@ -17,13 +18,23 @@ func EncodeOverlay(live *Settings) ([]byte, error) {
 
 // Minimize encodes live settings as an overlay that keeps only what differs from base.
 // base にあって live に無いキーは null にするので､render すると live に戻る｡
+// prune と managed_topic は live に無い宣言なので比べず､marker の topic は plan が足すので overlay に書かない｡
 func (c *Config) Minimize(live *Settings) ([]byte, error) {
+	if c.managedTopic != "" {
+		stripped := *live
+		stripped.Topics = slices.DeleteFunc(slices.Clone(live.Topics), func(t string) bool { return t == c.managedTopic })
+		if len(stripped.Topics) == 0 {
+			stripped.Topics = nil
+		}
+		live = &stripped
+	}
 	n, err := overlayNode(live)
 	if err != nil {
 		return nil, err
 	}
 	base := merge(c.base, nil)
 	removeKey(base, "prune")
+	removeKey(base, "managed_topic")
 	return Encode(diff(base, n))
 }
 

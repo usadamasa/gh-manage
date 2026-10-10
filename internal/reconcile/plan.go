@@ -59,7 +59,7 @@ func Plan(repo string, desired, live *config.Settings) RepoPlan {
 		return *p
 	}
 	p.planRepository(desired.Repository, live.Repository)
-	p.planTopics(desired.Topics, live.Topics)
+	p.planTopics(desiredTopics(desired, live.Topics), live.Topics)
 	p.planRulesets(desired, live)
 	p.planVariables(desired, live)
 	p.planSecrets(KindSecret, "secrets", desired.Secrets, live.Secrets, desired.Prune.Secrets)
@@ -97,6 +97,24 @@ func (p *RepoPlan) planRepository(desired, live config.Repository) {
 			p.add(Change{Op: OpUpdate, Kind: "repository", Key: key, Old: old, New: newValue})
 		}
 	}
+}
+
+// desiredTopics returns the topics a repository should have: the declared ones plus the managed topic.
+// topics を宣言していなければ live の topics を土台にして marker だけ足す｡どちらも無ければ nil (比べない)｡
+func desiredTopics(desired *config.Settings, live []string) []string {
+	if desired.ManagedTopic == "" {
+		return desired.Topics
+	}
+	base := desired.Topics
+	if base == nil {
+		base = live
+	}
+	out := sortedCopy(base)
+	if !slices.Contains(out, desired.ManagedTopic) {
+		out = append(out, desired.ManagedTopic)
+		sort.Strings(out)
+	}
+	return out
 }
 
 // planTopics compares topics as a set.

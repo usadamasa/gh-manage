@@ -14,7 +14,10 @@ import (
 
 // Settings is the desired state of one repository: base.yaml merged with repos/<name>.yaml.
 type Settings struct {
-	Prune             Prune              `yaml:"prune"`
+	Prune Prune `yaml:"prune"`
+	// ManagedTopic is a topic every managed repository carries so that they can be told apart on GitHub.
+	// plan が desired の topics に足す (topics を宣言していなければ live の topics に足す)｡render には出ない｡
+	ManagedTopic      string             `yaml:"managed_topic,omitempty"`
 	Repository        Repository         `yaml:"repository,omitempty"`
 	Topics            []string           `yaml:"topics,omitempty"`
 	Rulesets          map[string]Ruleset `yaml:"rulesets,omitempty"`
@@ -216,7 +219,9 @@ func decodeSecret(name string, val *yaml.Node) (Secret, error) {
 }
 
 var (
-	envNamePattern    = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+	envNamePattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+	// topicPattern is GitHub's rule for topics: 小文字の英数字と - で､英数字で始まる 50 文字まで｡
+	topicPattern      = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,49}$`)
 	visibilities      = []string{"public", "private"}
 	rulesetTargets    = []string{"branch", "tag", "push"}
 	rulesetEnforcemts = []string{"active", "evaluate", "disabled"}
@@ -225,6 +230,9 @@ var (
 // validate checks values that the YAML schema alone cannot.
 func (s *Settings) validate() error {
 	var errs []error
+	if t := s.ManagedTopic; t != "" && !topicPattern.MatchString(t) {
+		errs = append(errs, fmt.Errorf("managed_topic: %q は topic として使えない (小文字の英数字と - で 50 文字まで)", t))
+	}
 	errs = append(errs, validateRepository(s.Repository)...)
 	errs = append(errs, validateVariables(s.Variables)...)
 	errs = append(errs, validateSecrets("secrets", s.Secrets)...)
