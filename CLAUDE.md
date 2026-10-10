@@ -1,7 +1,8 @@
 # CLAUDE.md
 
 gh-manage は､自分 (usadamasa) が保有する GitHub リポジトリの設定を宣言的に管理する stateless な reconciler｡
-設計の背景と決定事項は README.md､作業中の計画は PLAN.md (gitignore 対象) にある｡
+設計の背景と決定事項は README.md､各コマンドの挙動と plan の読み方は skill `running-gh-manage`､
+作業中の計画は PLAN.md (gitignore 対象) にある｡
 
 ## 構成
 

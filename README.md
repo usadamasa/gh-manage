@@ -90,38 +90,8 @@ go install github.com/usadamasa/gh-manage/cmd/gh-manage@latest
 | `gh-manage apply [--yes] [--allow-publish]` | plan を表示し､確認のうえ適用する｡`--yes` で確認を省く (CI 用) |
 | `gh-manage snapshot [--repo name] [--minimize]` | live を `settings/repos/<name>.yaml` に書き出す (管理下に入れるとき)｡既存のファイルは上書きする |
 
-### snapshot
-
-- `--repo` を省くと自分が owner の全リポジトリを書き出す｡archived と fork は `--include-archived` / `--include-forks` を付けたときだけ含める
-- `--minimize` は base.yaml との差分だけを残す｡base にあって live に無いものは `null` で書くので､render すると live と同じになる
-- secret は値を読めないので名前だけ書き､`from_env` に同じ名前を入れる
-- variable は live の値を平文で書く｡環境変数から読ませたいものは手で `from_env` に書き換える
-- 最後に rate limit の残り (`X-RateLimit-Remaining`) を stderr に出す
-
-### apply
-
-- repository は変わったキーだけを `PATCH` する｡宣言していないキーは送らない
-- ruleset は名前で探して､あれば `PUT`､無ければ `POST` で宣言全体を書く｡削除は `prune.rulesets` のときだけ
-- 宣言があって GitHub に無いリポジトリは `POST /user/repos` (`auto_init: true`) で作り､続けて宣言した設定をすべて入れる
-- variable は無ければ `POST`､値が違えば `PATCH` する｡削除は `prune.variables` のときだけ
-- `from_env` の variable は plan の時点で環境変数から値を読む (値を比べるため)｡無い (空も含む) と plan も apply も止まる
-- secret (Actions / Dependabot) は宣言したものを差分の有無にかかわらず毎回書き直す｡
-  リポジトリの公開鍵を取得し､`from_env` の環境変数の値を sealed box (`golang.org/x/crypto/nacl/box`) で封緘して `PUT` する｡
-  値は plan にも出力にも出さず､書き直す secret の名前だけを確認の前に表示する｡削除は `prune.secrets` / `prune.dependabot_secrets` のときだけ
-- `from_env` の環境変数が 1 つでも無い (空も含む) と､何も書き込まずに止める
-- private を public にする変更が 1 件でもあれば､`--allow-publish` が無い限り何も書き込まずに止める
-
-### 差分の見方
-
-- 宣言したキーが live と一致していれば同じとみなす｡live 側にだけあるキー (server が埋める既定値など) は無視する
-- ruleset の `rules` は `type` で対応付けて `parameters` を同じ規則で比べる｡list 全体を宣言するので､live にだけある type は差分になる
-- list / map の update は YAML の diff で出す｡old 側 (`--format json` の `old` も) は判定に使ったキーだけに絞るので､
-  live にだけあるキーは `-` 行に出ない
-- 出力はリポジトリごとに `+ create` / `~ update (key: old -> new)` / `- delete` / `= no change`｡宣言されていないものは `!` の notice
-- 宣言があって GitHub に無いリポジトリは create､archived のリポジトリは skip する
-- secret は API が値を返さないので有無だけ比較する｡apply では宣言した secret を毎回暗号化して書き直す
-- 宣言していない ruleset / variable / secret は､`prune` で true にした種別だけ削除し､それ以外は notice として表示する
-- visibility を private から public に変える apply は `--allow-publish` を付けないと拒否する
+各コマンドの細かい挙動と plan の差分の読み方は skill
+[running-gh-manage](.claude/skills/running-gh-manage/SKILL.md) にある｡
 
 ## 認証
 
