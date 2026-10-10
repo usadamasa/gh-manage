@@ -2,3 +2,9 @@
 # rulesets は base のまま｡ruleset main の include: [] (何も守っていない) は base の ~DEFAULT_BRANCH に直す
 repository:
   visibility: private
+variables:
+  TAGPR_CLIENT_ID:
+    from_env: TAGPR_CLIENT_ID
+secrets:
+  TAGPR_PRIVATE_KEY:
+    from_env: TAGPR_PRIVATE_KEY
