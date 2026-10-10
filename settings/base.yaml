@@ -1,11 +1,13 @@
 # 全リポジトリ共通の設定｡repos/<name>.yaml は base との差分だけを書く (snapshot --minimize)｡
-# 2026-09 の bootstrap は agents-daemon 1 リポジトリから始めたので､値は agents-daemon の live に揃えてある｡
-# 管理するリポジトリを増やすときに､多数派の値へ寄せ直す｡
+# 2026-09 の bootstrap は agents-daemon 1 リポジトリから始め､2026-10 に archived と fork を除く 16 リポジトリへ広げた｡
+# 値は多数派に揃えてあり､外れるリポジトリは overlay に理由を書く｡
 prune:
   rulesets: false
   variables: false
   secrets: false
   dependabot_secrets: false
+# 管理下のリポジトリに必ず付ける topic｡GitHub 側で管理対象を見分ける印で､plan が desired の topics に足す
+managed_topic: gh-managed
 repository:
   visibility: public
   default_branch: main
