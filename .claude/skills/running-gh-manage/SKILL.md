@@ -59,4 +59,4 @@ gh-manage は desired (settings/) と live (GitHub API) を毎回比べる state
 | plan に出ないキーが live にある | desired に書いていないキーは比べない。管理したいなら desired に書く |
 | secret が毎回「変更なし」なのに apply で書き直される | 値を比べられないので、宣言した secret は常に書き直す仕様 |
 | 宣言していない variable が消えない | `prune.variables` が false。notice (`!`) に出るだけで削除しない |
-| `rules` の並び順だけ違うのに diff が出る | 判定は type で突き合わせるので差分ではない。表示だけ並び順の影響が残る (issue #23) |
+| `rules` の diff の並びが live と違う | 判定は type で突き合わせるので並び順は差分にならない。表示では old 側を desired の順に並べ、desired に無い type を末尾に回す |

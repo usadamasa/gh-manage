@@ -80,10 +80,10 @@ func TestNarrowRules(t *testing.T) {
 			[]any{rule("deletion", map[string]any{"x": 1})},
 		},
 		{
-			"desired に無い type と並び順はそのまま",
+			"desired の type の順に並べ､desired に無い type は live の順で末尾に回す",
 			[]any{rule("pull_request", map[string]any{"count": 1}), rule("deletion", nil)},
-			[]any{rule("deletion", nil), rule("non_fast_forward", nil), rule("pull_request", map[string]any{"count": 0, "r": 1})},
-			[]any{rule("deletion", nil), rule("non_fast_forward", nil), rule("pull_request", map[string]any{"count": 0})},
+			[]any{rule("update", nil), rule("deletion", nil), rule("non_fast_forward", nil), rule("pull_request", map[string]any{"count": 0, "r": 1})},
+			[]any{rule("pull_request", map[string]any{"count": 0}), rule("deletion", nil), rule("update", nil), rule("non_fast_forward", nil)},
 		},
 		{
 			"live に parameters が無ければ足さない",
