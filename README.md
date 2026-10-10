@@ -29,6 +29,8 @@ overlay は base に deep merge する｡
 - list は丸ごと置き換える｡ruleset の `rules` に 1 つ足すときも､overlay で list 全体を書き直す
 - list の要素の中の `null` は削除でなく値として残す (`code_coverage` の `minimum_coverage: null` など)
 - `prune` も同じ規則で解決する｡既定は false で､base → overlay の順に上書きする
+- `managed_topic` の topic は plan が desired の topics に足す (`topics` を宣言していないリポジトリは live の topics に足す)｡
+  `render` と snapshot の overlay には出ない
 
 schema に無いキーはエラーにする (typo を apply の前に止める)｡`repository.name` は rename を防ぐため受け付けない｡
 合成結果は `gh-manage render [name]` で確認できる｡
@@ -40,6 +42,7 @@ prune:                      # 宣言していないリソースを消すか｡�
   variables: false
   secrets: false
   dependabot_secrets: false
+managed_topic: gh-managed   # 管理下のリポジトリに必ず付ける topic｡GitHub 側で管理対象を見分けるための印
 repository:                 # PATCH /repos/{owner}/{repo} のフィールドをそのまま書く
   visibility: public
   has_wiki: false

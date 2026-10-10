@@ -303,6 +303,7 @@ func TestRender_ValidationErrors(t *testing.T) {
 		{"ruleset の target", "rulesets:\n  main:\n    target: commit\n", "target"},
 		{"rule の type が空", "rulesets:\n  main:\n    rules:\n      - parameters: {}\n", "type"},
 		{"ruleset の target が無い", "rulesets:\n  other:\n    enforcement: active\n", "other"},
+		{"managed_topic が topic の命名規則から外れる", "managed_topic: \"Managed Topic\"\n", "managed_topic"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

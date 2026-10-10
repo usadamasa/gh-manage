@@ -90,7 +90,11 @@ func actions(t *testing.T, p RepoPlan, desired *config.Settings) []Action {
 
 // TestApply_Converges applies every golden plan and checks that planning again finds nothing.
 func TestApply_Converges(t *testing.T) {
-	for _, name := range []string{"repository", "rulesets", "prune", "topics", "create_repo", "no_change", "values"} {
+	cases := []string{
+		"repository", "rulesets", "prune", "topics", "create_repo", "no_change", "values",
+		"managed_topic", "managed_topic_declared", "create_managed",
+	}
+	for _, name := range cases {
 		t.Run(name, func(t *testing.T) {
 			dir := filepath.Join("testdata/plan", name)
 			desired := readSettings(t, filepath.Join(dir, "desired.yaml"))
@@ -139,6 +143,50 @@ func TestActions_Calls(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := &fakeGitHub{live: tt.live}
 			w.run(t, actions(t, Plan("r", desired, tt.live), desired))
+			if !reflect.DeepEqual(w.calls, tt.want) {
+				t.Errorf("calls = %q, want %q", w.calls, tt.want)
+			}
+		})
+	}
+}
+
+// TestActions_ManagedTopic checks that the marker topic is written from what plan decided, not from desired.Topics.
+func TestActions_ManagedTopic(t *testing.T) {
+	tests := []struct {
+		name    string
+		desired *config.Settings
+		live    *config.Settings
+		want    []string
+	}{
+		{
+			"topics 未宣言なら live の topics に marker を足す",
+			&config.Settings{ManagedTopic: "gh-managed"},
+			&config.Settings{Topics: []string{"go"}},
+			[]string{"topics gh-managed,go"},
+		},
+		{
+			"topics を宣言していれば宣言と marker の和にする",
+			&config.Settings{ManagedTopic: "gh-managed", Topics: []string{"cli"}},
+			&config.Settings{Topics: []string{"cli", "old"}},
+			[]string{"topics cli,gh-managed"},
+		},
+		{
+			"marker が付いていれば何も書かない",
+			&config.Settings{ManagedTopic: "gh-managed"},
+			&config.Settings{Topics: []string{"gh-managed", "go"}},
+			nil,
+		},
+		{
+			"新規作成でも marker を付ける",
+			&config.Settings{ManagedTopic: "gh-managed"},
+			nil,
+			[]string{"create", "topics gh-managed"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &fakeGitHub{live: tt.live}
+			w.run(t, actions(t, Plan("r", tt.desired, tt.live), tt.desired))
 			if !reflect.DeepEqual(w.calls, tt.want) {
 				t.Errorf("calls = %q, want %q", w.calls, tt.want)
 			}

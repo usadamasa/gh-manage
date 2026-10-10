@@ -73,14 +73,15 @@ func Actions(p RepoPlan, desired *config.Settings) ([]Action, error) {
 
 	var acts []Action
 	fields := map[string]any{}
-	var topics bool
+	var topics []string
 	var upserts, deletes []string
 	for _, c := range p.Changes {
 		switch {
 		case c.Kind == "repository":
 			fields[c.Key] = c.New
 		case c.Kind == "topics":
-			topics = true
+			// plan が managed topic を足した結果を書く
+			topics, _ = c.New.([]string)
 		case c.Kind == "ruleset" && c.Op == OpDelete:
 			deletes = append(deletes, c.Name)
 		case c.Kind == "ruleset" && !slices.Contains(upserts, c.Name):
@@ -90,8 +91,8 @@ func Actions(p RepoPlan, desired *config.Settings) ([]Action, error) {
 	if len(fields) > 0 {
 		acts = append(acts, Action{Op: ActUpdateRepository, Fields: fields})
 	}
-	if topics {
-		acts = append(acts, Action{Op: ActSetTopics, Topics: desired.Topics})
+	if topics != nil {
+		acts = append(acts, Action{Op: ActSetTopics, Topics: topics})
 	}
 	acts = append(acts, rulesetActions(desired, upserts, deletes)...)
 	acts = append(acts, variableActions(p.Changes, desired.Variables)...)
@@ -109,8 +110,8 @@ func createActions(desired *config.Settings) ([]Action, error) {
 	if len(fields) > 0 {
 		acts = append(acts, Action{Op: ActUpdateRepository, Fields: fields})
 	}
-	if desired.Topics != nil {
-		acts = append(acts, Action{Op: ActSetTopics, Topics: desired.Topics})
+	if topics := desiredTopics(desired, nil); topics != nil {
+		acts = append(acts, Action{Op: ActSetTopics, Topics: topics})
 	}
 	acts = append(acts, rulesetActions(desired, sortedKeys(desired.Rulesets), nil)...)
 	for _, name := range sortedKeys(desired.Variables) {
