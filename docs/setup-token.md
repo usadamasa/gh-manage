@@ -86,3 +86,20 @@ workflow は `.github/workflows/settings.yaml`｡
 - PR コメントは workflow の `GITHUB_TOKEN` で書く (PAT は使わない)
 - 配布する secret を足したら､workflow の Apply の `env` にも同じ名前で足す
 - `from_env` の variable を足したら､workflow の Plan / Apply / Drift の `env` に `${{ vars.<名前> }}` で足す
+
+## Workbench への自動追加
+
+`.github/workflows/workbench.yaml` が毎時､`scripts/workbench/repos.tsv` のリポジトリから
+Workbench (Project 5) に未登録の open な issue / PR を探して追加し､Kind を埋める｡
+ユーザー所有の Project は fine-grained PAT と `GITHUB_TOKEN` では書けないので､別に classic PAT を置く｡
+
+| Secret | 内容 |
+| --- | --- |
+| `WORKBENCH_TOKEN` | classic PAT｡scope は `repo` (非公開リポジトリの issue を検索する) と `project` |
+
+```bash
+gh secret set WORKBENCH_TOKEN --repo usadamasa/gh-manage
+```
+
+対象リポジトリを足す・外すときは `scripts/workbench/repos.tsv` を直す｡
+手元で対象だけ見るなら `DRY_RUN=1 scripts/workbench/add-to-project.sh`｡
