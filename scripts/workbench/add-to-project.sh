@@ -9,6 +9,9 @@ set -euo pipefail
 
 readonly OWNER=usadamasa
 readonly PROJECT=5
+# gh project に login を渡すと user と organization を同時に引き､read:org の無い token では
+# "unknown owner type" で落ちる｡Project の持ち主は token の持ち主なので viewer で引く
+readonly PROJECT_OWNER=@me
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 readonly REPOS_TSV="${script_dir}/repos.tsv"
 
@@ -43,8 +46,8 @@ if [[ "${DRY_RUN:-}" == 1 ]]; then
   exit 0
 fi
 
-project_id=$(gh project view "$PROJECT" --owner "$OWNER" --format json --jq .id)
-kind_field=$(gh project field-list "$PROJECT" --owner "$OWNER" --format json \
+project_id=$(gh project view "$PROJECT" --owner "$PROJECT_OWNER" --format json --jq .id)
+kind_field=$(gh project field-list "$PROJECT" --owner "$PROJECT_OWNER" --format json \
   --jq '.fields[] | select(.name == "Kind")')
 kind_field_id=$(jq -r .id <<<"$kind_field")
 if [[ -z "$kind_field_id" ]]; then
@@ -61,7 +64,7 @@ while IFS=$'\t' read -r repo url; do
     failed=1
     continue
   fi
-  if ! item_id=$(gh project item-add "$PROJECT" --owner "$OWNER" --url "$url" --format json --jq .id); then
+  if ! item_id=$(gh project item-add "$PROJECT" --owner "$PROJECT_OWNER" --url "$url" --format json --jq .id); then
     printf 'error: 追加に失敗: %s\n' "$url" >&2
     failed=1
     continue
