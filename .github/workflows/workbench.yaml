@@ -1,0 +1,30 @@
+name: Workbench
+
+# 管理下リポジトリの未登録の open な issue / PR を Workbench (Project 5) に追加し､Kind を埋める｡
+# ユーザー所有の Project は GITHUB_TOKEN と fine-grained PAT では書けないので､classic PAT を使う｡
+"on":
+  schedule:
+    - cron: "17 * * * *" # 毎時
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  add:
+    name: Add to project
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Add
+        env:
+          GH_TOKEN: ${{ secrets.WORKBENCH_TOKEN }}
+        run: scripts/workbench/add-to-project.sh

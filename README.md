@@ -113,6 +113,9 @@ fine-grained PAT 1 本で動く｡作り方は [docs/setup-token.md](docs/setup-
 
 workflow は `.github/workflows/settings.yaml`｡secret の置き場所と job の詳細は [docs/setup-token.md](docs/setup-token.md#github-actions-で使う)｡
 
+別の workflow `.github/workflows/workbench.yaml` が､毎時 Workbench (Project 5) に未登録の issue / PR を追加する｡
+詳細は [docs/setup-token.md](docs/setup-token.md#workbench-への自動追加)｡
+
 ## 開発
 
 ### 前提

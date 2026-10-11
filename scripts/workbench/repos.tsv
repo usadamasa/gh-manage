@@ -1,0 +1,17 @@
+# Workbench (Project 5) に自動で載せるリポジトリと Kind｡タブ区切り
+japanese-writer	Plugin
+agents-daemon	Plugin
+go-arch-metrics	Plugin
+orm-discovery-mcp-go	Plugin
+acm-discovery	Plugin
+agents-marketplace	Plugin
+agents-config	Harness
+config-catalog	Harness
+dotfile	Harness
+gh-manage	CLI
+kubectl-localmesh	CLI
+apigap	CLI
+twigpui	CLI
+go-template	CLI
+m5stack-sandbox	Other
+watch-my-strokes	Other
