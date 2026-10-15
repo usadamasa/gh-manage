@@ -379,6 +379,12 @@ func TestVariables_ResolveEnv(t *testing.T) {
 			vars:    Variables{"A": {FromEnv: "MISSING"}, "B": {FromEnv: "EMPTY"}},
 			wantErr: []string{"A", "MISSING", "B", "EMPTY"},
 		},
+		{
+			name:    "無いものがあっても解決できるものは埋める",
+			vars:    Variables{"ID": {FromEnv: "CLIENT_ID"}, "A": {FromEnv: "MISSING"}},
+			want:    Variables{"ID": {Value: "Iv23", FromEnv: "CLIENT_ID"}, "A": {FromEnv: "MISSING"}},
+			wantErr: []string{"A", "MISSING"},
+		},
 		{name: "nil でもよい"},
 	}
 	for _, tt := range tests {
@@ -392,6 +398,9 @@ func TestVariables_ResolveEnv(t *testing.T) {
 					if !strings.Contains(err.Error(), w) {
 						t.Errorf("ResolveEnv() error = %q, want it to contain %q", err, w)
 					}
+				}
+				if tt.want != nil && !reflect.DeepEqual(tt.vars, tt.want) {
+					t.Errorf("ResolveEnv() = %#v, want %#v", tt.vars, tt.want)
 				}
 				return
 			}

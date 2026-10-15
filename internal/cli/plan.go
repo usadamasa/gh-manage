@@ -77,6 +77,8 @@ Exit code: 0 = no difference, 2 = differences found, 1 = error.`,
 type planned struct {
 	owner   string
 	entries []plannedRepo
+	// missingEnv は環境変数が無い from_env variable｡plan は notice で済ませ､apply は書き込み前に止める
+	missingEnv error
 }
 
 type plannedRepo struct {
@@ -94,7 +96,7 @@ func (p planned) plans() []reconcile.RepoPlan {
 
 // buildPlans plans every repository that has settings/repos/<name>.yaml.
 func buildPlans(ctx context.Context, cfg *config.Config, client *github.Client) (planned, error) {
-	rendered, err := renderAll(cfg)
+	rendered, missingEnv, err := renderAll(cfg)
 	if err != nil {
 		return planned{}, err
 	}
@@ -111,7 +113,7 @@ func buildPlans(ctx context.Context, cfg *config.Config, client *github.Client) 
 		owned[r.Name] = r
 	}
 
-	out := planned{owner: owner}
+	out := planned{owner: owner, missingEnv: missingEnv}
 	for _, name := range cfg.Names() {
 		desired := rendered[name]
 		var p reconcile.RepoPlan
@@ -134,20 +136,19 @@ func buildPlans(ctx context.Context, cfg *config.Config, client *github.Client) 
 }
 
 // renderAll renders every repository and reads the from_env variables from the environment.
-// variable は plan で値を比べるので､secret と違い plan の時点で環境変数が要る｡
-// 無いものがあれば､全部を挙げてエラーにする｡
-func renderAll(cfg *config.Config) (map[string]*config.Settings, error) {
-	out := map[string]*config.Settings{}
-	var errs []error
+// 環境変数が無い variable は値を空のまま残し (plan は値を比べない)､全部を挙げた missingEnv で返す｡
+func renderAll(cfg *config.Config) (rendered map[string]*config.Settings, missingEnv, err error) {
+	rendered = map[string]*config.Settings{}
+	var missing []error
 	for _, name := range cfg.Names() {
 		desired, err := cfg.Render(name)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if err := desired.Variables.ResolveEnv(os.LookupEnv); err != nil {
-			errs = append(errs, fmt.Errorf("%s: %w", name, err))
+			missing = append(missing, fmt.Errorf("%s: %w", name, err))
 		}
-		out[name] = desired
+		rendered[name] = desired
 	}
-	return out, errors.Join(errs...)
+	return rendered, errors.Join(missing...), nil
 }

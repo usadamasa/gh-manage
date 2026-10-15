@@ -1,0 +1,6 @@
+# from_env の環境変数が無い (Value が空のまま) variable
+variables:
+  ID:
+    from_env: CLIENT_ID
+  NEW_ID:
+    from_env: NEW_CLIENT_ID

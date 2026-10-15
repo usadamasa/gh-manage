@@ -29,7 +29,8 @@ gh-manage は desired (settings/) と live (GitHub API) を毎回比べる state
 - ruleset は名前で探して、あれば `PUT`、無ければ `POST` で宣言全体を書く。削除は `prune.rulesets` のときだけ
 - 宣言があって GitHub に無いリポジトリは `POST /user/repos` (`auto_init: true`) で作り、続けて宣言した設定をすべて入れる
 - variable は無ければ `POST`、値が違えば `PATCH` する。削除は `prune.variables` のときだけ
-- `from_env` の variable は plan の時点で環境変数から値を読む (値を比べるため)。無い (空も含む) と plan も apply も止まる
+- `from_env` の variable は plan の時点で環境変数から値を読む (値を比べるため)。無い (空も含む) と apply は何も書き込まずに止まる。
+  plan は止まらず、その variable の値を比べずに notice (`!`) を出す (live に無ければ create)
 - secret (Actions / Dependabot) は宣言したものを差分の有無にかかわらず毎回書き直す。
   リポジトリの公開鍵を取得し、`from_env` の環境変数の値を sealed box (`golang.org/x/crypto/nacl/box`) で封緘して `PUT` する。
   値は plan にも出力にも出さず、書き直す secret の名前だけを確認の前に表示する。
