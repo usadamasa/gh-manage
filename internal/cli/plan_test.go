@@ -84,6 +84,23 @@ func TestPlanCmd(t *testing.T) {
 	}
 }
 
+// from_env の環境変数が無くても plan は止めない (値を比べずに進める)｡止めるのは apply だけ
+func TestPlanCmd_MissingEnv(t *testing.T) {
+	t.Setenv("GO_VERSION", "")
+	dir := t.TempDir()
+	writeFiles(t, dir, map[string]string{
+		"base.yaml":    "secrets:\n  TOKEN:\n    from_env: TOKEN\n",
+		"repos/a.yaml": "variables:\n  GO:\n    from_env: GO_VERSION\n",
+	})
+	out, err := execPlan(t, dir)
+	if got := ExitCode(err); got != 2 {
+		t.Fatalf("ExitCode(%v) = %d, want 2", err, got)
+	}
+	if want := "a:\n  + create variable GO\n"; out != want {
+		t.Errorf("output =\n%s\nwant\n%s", out, want)
+	}
+}
+
 func TestPlanCmd_JSON(t *testing.T) {
 	dir := t.TempDir()
 	writeFiles(t, dir, map[string]string{"base.yaml": "{}\n", "repos/a.yaml": "repository:\n  has_wiki: true\n"})

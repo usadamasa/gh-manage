@@ -162,12 +162,16 @@ func (p *RepoPlan) planRulesets(desired, live *config.Settings) {
 
 func (p *RepoPlan) planVariables(desired, live *config.Settings) {
 	for _, name := range sortedKeys(desired.Variables) {
+		d := desired.Variables[name]
 		l, ok := live.Variables[name]
 		switch {
 		case !ok:
 			p.add(Change{Op: OpCreate, Kind: "variable", Name: name})
-		case l.Value != desired.Variables[name].Value:
-			p.add(Change{Op: OpUpdate, Kind: "variable", Name: name, Old: l.Value, New: desired.Variables[name].Value})
+		case d.FromEnv != "" && d.Value == "":
+			// 環境変数が無いと値が分からない｡apply はこの状態で止まるので､plan は比べずに進める
+			p.Notices = append(p.Notices, fmt.Sprintf("variable %s は環境変数 %s が無いので値を比べない", name, d.FromEnv))
+		case l.Value != d.Value:
+			p.add(Change{Op: OpUpdate, Kind: "variable", Name: name, Old: l.Value, New: d.Value})
 		}
 	}
 	for _, name := range sortedKeys(live.Variables) {
