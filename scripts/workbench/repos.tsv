@@ -8,6 +8,7 @@ agents-marketplace	Plugin
 agents-config	Harness
 config-catalog	Harness
 dotfile	Harness
+workspace	Harness
 gh-manage	CLI
 kubectl-localmesh	CLI
 apigap	CLI
