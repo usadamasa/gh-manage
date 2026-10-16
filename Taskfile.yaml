@@ -42,11 +42,6 @@ tasks:
     cmds:
       - spm-go all
 
-  pin:
-    desc: Pin GitHub Actions in workflows to commit SHAs
-    cmds:
-      - pinact run
-
   format:
     desc: Format code
     cmds:
