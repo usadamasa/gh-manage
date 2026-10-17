@@ -7,6 +7,6 @@ runs:
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@v23
 
-    # nix-develop が devShell の PATH と env を後続の step へ渡す｡
+    # nix-develop が devShell の PATH と env を後続の step へ渡す。
     - name: Load devShell
       uses: nicknovitski/nix-develop@v1.2.1

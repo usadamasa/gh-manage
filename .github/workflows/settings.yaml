@@ -40,9 +40,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-go@v7.0.0
-        with:
-          go-version-file: go.mod
+      - uses: $/.github/actions/setup-nix
 
       - name: Plan
         id: plan
@@ -99,9 +97,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-go@v7.0.0
-        with:
-          go-version-file: go.mod
+      - uses: $/.github/actions/setup-nix
 
       - name: Apply
         env:
@@ -139,9 +135,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-go@v7.0.0
-        with:
-          go-version-file: go.mod
+      - uses: $/.github/actions/setup-nix
 
       - name: Plan
         env:
