@@ -4,22 +4,16 @@
 version: 'v0.0.3'
 workflows:
     '.github/workflows/ci.yaml':
-        - 'actions/cache@v6.1.0'
         - 'actions/checkout@v7.0.1'
-        - 'actions/setup-go@v7.0.0'
         - 'actions/upload-artifact@v7.0.1'
-        - 'aquaproj/aqua-installer@v4.0.5'
+        - 'determinatesystems/nix-installer-action@v23'
+        - 'nicknovitski/nix-develop@v1.2.1'
     '.github/workflows/settings.yaml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-go@v7.0.0'
     '.github/workflows/workbench.yaml':
         - 'actions/checkout@v7.0.1'
 dependencies:
-    'actions/cache@v6.1.0':
-        ref: 'v6.1.0'
-        commit: 'sha1-55cc8345863c7cc4c66a329aec7e433d2d1c52a9'
-        owner_id: 44036562
-        repo_id: 215566462
     'actions/checkout@v7.0.1':
         ref: 'v7.0.1'
         commit: 'sha1-3d3c42e5aac5ba805825da76410c181273ba90b1'
@@ -35,8 +29,13 @@ dependencies:
         commit: 'sha1-043fb46d1a93c77aae656e7c1c64a875d1fc6a0a'
         owner_id: 44036562
         repo_id: 192625955
-    'aquaproj/aqua-installer@v4.0.5':
-        ref: 'v4.0.5'
-        commit: 'sha1-96a9bc20066c5bf5e275b41019cfc165b25f4e2e'
-        owner_id: 95116411
-        repo_id: 400140776
+    'determinatesystems/nix-installer-action@v23':
+        ref: 'v23'
+        commit: 'sha1-3138316df39ed29be04236d7ffc686fa525866aa'
+        owner_id: 80991770
+        repo_id: 588678074
+    'nicknovitski/nix-develop@v1.2.1':
+        ref: 'v1.2.1'
+        commit: 'sha1-9be7cfb4b10451d3390a75dc18ad0465bed4932a'
+        owner_id: 151337
+        repo_id: 706956179
