@@ -29,7 +29,7 @@ func encodeOverlayFile(n *yaml.Node) ([]byte, error) {
 
 // Minimize encodes live settings as an overlay that keeps only what differs from base.
 // base にあって live に無いキーは null にするので､render すると live に戻る｡
-// prune と managed_topic は live に無い宣言なので比べず､marker の topic は plan が足すので overlay に書かない｡
+// prune､data､managed_topic は live に無い宣言なので比べず､marker の topic は plan が足すので overlay に書かない｡
 func (c *Config) Minimize(live *Settings) ([]byte, error) {
 	if c.managedTopic != "" {
 		stripped := *live
@@ -45,6 +45,7 @@ func (c *Config) Minimize(live *Settings) ([]byte, error) {
 	}
 	base := merge(c.base, nil)
 	removeKey(base, "prune")
+	removeKey(base, "data")
 	removeKey(base, "managed_topic")
 	return encodeOverlayFile(diff(base, n))
 }

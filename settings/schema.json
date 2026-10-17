@@ -6,6 +6,7 @@
   "additionalProperties": false,
   "properties": {
     "prune": { "$ref": "#/definitions/prune" },
+    "data": { "$ref": "#/definitions/data" },
     "managed_topic": {
       "description": "管理下のリポジトリに必ず付ける topic。plan が desired の topics に足す。",
       "anyOf": [{ "type": "null" }, { "const": "" }, { "$ref": "#/definitions/topic" }]
@@ -69,6 +70,27 @@
         "secrets": { "type": ["boolean", "null"] },
         "dependabot_secrets": { "type": ["boolean", "null"] }
       }
+    },
+    "data": {
+      "description": "管理しないが存在を前提にするリソースの名前を種類ごとに並べる。作らず消さず (prune でも消さない)、live に無ければ plan をエラーにする。list は merge せず overlay の値で丸ごと置き換わる。",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "rulesets": { "$ref": "#/definitions/data_names" },
+        "variables": { "$ref": "#/definitions/data_actions_names" },
+        "secrets": { "$ref": "#/definitions/data_actions_names" },
+        "dependabot_secrets": { "$ref": "#/definitions/data_actions_names" }
+      }
+    },
+    "data_names": {
+      "type": ["array", "null"],
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "data_actions_names": {
+      "type": ["array", "null"],
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/actions_name" }
     },
     "repository": {
       "description": "PATCH /repos/{owner}/{repo} のフィールド。書かないキーは plan で比べない。",
