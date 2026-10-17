@@ -80,6 +80,8 @@ dependabot_secrets:         # Dependabot の secret｡書き方は secrets と�
 # settings/repos/agents-config.yaml
 repository:
   visibility: private
+data:                       # 管理しないが存在を前提にするもの (Terraform の data source)｡作らず消さず､live に無ければ plan がエラー
+  secrets: [DEPLOY_TOKEN]   # 種類は rulesets / variables / secrets / dependabot_secrets
 ```
 
 ## インストール

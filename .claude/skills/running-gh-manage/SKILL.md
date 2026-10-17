@@ -18,6 +18,8 @@ gh-manage は desired (settings/) と live (GitHub API) を毎回比べる state
 - `--minimize` は base.yaml との差分だけを残す。base にあって live に無いものは `null` で書くので、render すると live と同じになる。
   base の `managed_topic` の topic は plan が足すものなので、live の topics にあっても overlay には書かない
 - secret は値を読めないので名前だけ書き、`from_env` に同じ名前を入れる
+- `data` は live に無い宣言なので書かない。上書きすると、data に並べていた名前は secrets などのセクションに出るので、
+  手で data へ戻す
 - variable は live の値を平文で書く。環境変数から読ませたいものは手で `from_env` に書き換える
 - 最後に rate limit の残り (`X-RateLimit-Remaining`) を stderr に出す
 
@@ -54,6 +56,8 @@ gh-manage は desired (settings/) と live (GitHub API) を毎回比べる state
 - 宣言があって GitHub に無いリポジトリは create、archived のリポジトリは skip する
 - secret は API が値を返さないので有無だけ比較する。apply では宣言した secret を毎回暗号化して書き直す
 - 宣言していない ruleset / variable / secret は、`prune` で true にした種別だけ削除し、それ以外は notice として表示する
+- `data` に並べた名前は管理しないが存在を前提にするもの (Terraform の data source)。create / delete / notice のどれにも出ず、
+  `prune` でも消さない。live に無ければ、全リポジトリの plan を出したあとエラー (exit 1) で止まる。apply は何も書き込まずに止まる
 - visibility を private から public に変える apply は `--allow-publish` を付けないと拒否する
 
 ## よくある誤読
@@ -64,4 +68,5 @@ gh-manage は desired (settings/) と live (GitHub API) を毎回比べる state
 | `render` の topics に `managed_topic` の topic が無い | marker は plan が live を見て足す。render は宣言した topics だけを出す |
 | secret が毎回「変更なし」なのに apply で書き直される | 値を比べられないので、宣言した secret は常に書き直す仕様 |
 | 宣言していない variable が消えない | `prune.variables` が false。notice (`!`) に出るだけで削除しない |
+| 手で置いた secret の notice (`!`) が毎回出る | gh-manage が値を配らないもの (自分の token など) は `data.secrets` に並べると出なくなる |
 | `rules` の diff の並びが live と違う | 判定は type で突き合わせるので並び順は差分にならない。表示では old 側を desired の順に並べ、desired に無い type を末尾に回す |
