@@ -1,0 +1,12 @@
+rulesets:
+  legacy:
+    target: branch
+    enforcement: active
+variables:
+  FOO: bar
+secrets:
+  GH_MANAGE_TOKEN:
+    from_env: GH_MANAGE_TOKEN
+dependabot_secrets:
+  NPM_TOKEN:
+    from_env: NPM_TOKEN

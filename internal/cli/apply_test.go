@@ -159,6 +159,24 @@ func TestApplyCmd(t *testing.T) {
 			wantCalls: []string{"DELETE repos/o/a/actions/secrets/TOKEN"},
 		},
 		{
+			name: "prune.secrets でも data の secret は消さない",
+			files: map[string]string{
+				"base.yaml":    "prune:\n  secrets: true\n",
+				"repos/a.yaml": "data:\n  secrets: [TOKEN]\n",
+			},
+			args:    []string{"--yes"},
+			wantOut: "a: = no change\n",
+		},
+		{
+			name: "data の名前が live に無ければ 1 件も書かずに止める",
+			files: map[string]string{
+				"base.yaml":    "{}\n",
+				"repos/a.yaml": "repository:\n  has_wiki: true\ndata:\n  secrets: [GONE]\n",
+			},
+			args:    []string{"--yes"},
+			wantErr: "data secret GONE",
+		},
+		{
 			name: "private → public は --allow-publish が無ければ 1 件も書かない",
 			files: map[string]string{
 				"base.yaml":    "{}\n",

@@ -1,0 +1,10 @@
+prune:
+  rulesets: true
+  variables: true
+  secrets: true
+  dependabot_secrets: true
+data:
+  rulesets: [legacy]
+  variables: [FOO]
+  secrets: [GH_MANAGE_TOKEN]
+  dependabot_secrets: [NPM_TOKEN]

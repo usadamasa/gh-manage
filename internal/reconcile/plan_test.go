@@ -88,6 +88,56 @@ func TestPlan_HasChanges(t *testing.T) {
 	}
 }
 
+func TestCheckData(t *testing.T) {
+	data := config.Data{
+		Rulesets:          []string{"legacy"},
+		Variables:         []string{"V"},
+		Secrets:           []string{"S"},
+		DependabotSecrets: []string{"D"},
+	}
+	all := &config.Settings{
+		Rulesets:          map[string]config.Ruleset{"legacy": {}},
+		Variables:         config.Variables{"V": {Value: "x"}},
+		Secrets:           config.Secrets{"S": {}},
+		DependabotSecrets: config.Secrets{"D": {}},
+	}
+	tests := []struct {
+		name    string
+		live    *config.Settings
+		wantErr string
+	}{
+		{name: "全部ある", live: all},
+		{
+			name: "無いものを全部挙げる",
+			live: &config.Settings{Variables: all.Variables},
+			wantErr: "r: data ruleset legacy が live に無い\n" +
+				"r: data secret S が live に無い\n" +
+				"r: data dependabot_secret D が live に無い",
+		},
+		{
+			name: "リポジトリが無ければ全部無い",
+			wantErr: "r: data ruleset legacy が live に無い\n" +
+				"r: data variable V が live に無い\n" +
+				"r: data secret S が live に無い\n" +
+				"r: data dependabot_secret D が live に無い",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := CheckData("r", &config.Settings{Data: data}, tt.live)
+			if tt.wantErr == "" {
+				if err != nil {
+					t.Errorf("CheckData() error = %v, want nil", err)
+				}
+				return
+			}
+			if err == nil || err.Error() != tt.wantErr {
+				t.Errorf("CheckData() error =\n%v\nwant\n%s", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestWriteText_Skip(t *testing.T) {
 	var buf bytes.Buffer
 	if err := WriteText(&buf, []RepoPlan{Skip("old", "archived なので skip")}); err != nil {
