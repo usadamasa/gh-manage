@@ -129,7 +129,7 @@ CI も同じ flake を使う｡nixpkgs に無い spm-go と analyze-* は `flake
 ### セットアップ
 
 ```bash
-direnv allow    # direnv を使わないなら nix develop でシェルに入る
+direnv allow
 ```
 
 ツールの版を上げるときは `task nix:update` で `flake.lock` を更新する｡

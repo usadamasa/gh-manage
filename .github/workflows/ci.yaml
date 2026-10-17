@@ -41,16 +41,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh actions-lock --verify
 
-  # Go と lint のツールは flake.nix の devShell から取る｡nix-develop が PATH と env を後続の step へ渡す｡
+  # Go と lint のツールは flake.nix の devShell から取る (setup-nix)｡
   test:
     name: Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - uses: DeterminateSystems/nix-installer-action@v23
-
-      - uses: nicknovitski/nix-develop@v1.2.1
+      - uses: $/.github/actions/setup-nix
 
       - name: Run tests
         run: go test ./... -race -coverprofile=coverage.out
@@ -67,9 +65,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - uses: DeterminateSystems/nix-installer-action@v23
-
-      - uses: nicknovitski/nix-develop@v1.2.1
+      - uses: $/.github/actions/setup-nix
 
       - name: Check formatting
         run: |
