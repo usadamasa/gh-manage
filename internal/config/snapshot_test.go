@@ -9,13 +9,16 @@ import (
 	"testing"
 )
 
+// overlayHeaderWant is the first line of every overlay that snapshot writes: settings/repos/ から schema を指す。
+const overlayHeaderWant = "# yaml-language-server: $schema=../schema.json\n"
+
 func TestEncodeOverlay(t *testing.T) {
 	live := baseSettings()
 	got, err := EncodeOverlay(live)
 	if err != nil {
 		t.Fatalf("EncodeOverlay() error = %v", err)
 	}
-	want := `repository:
+	want := overlayHeaderWant + `repository:
   visibility: public
   has_wiki: false
   delete_branch_on_merge: true
@@ -128,8 +131,8 @@ func TestMinimize(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Minimize() error = %v", err)
 			}
-			if string(got) != tt.want {
-				t.Errorf("Minimize() =\n%s\nwant\n%s", got, tt.want)
+			if want := overlayHeaderWant + tt.want; string(got) != want {
+				t.Errorf("Minimize() =\n%s\nwant\n%s", got, want)
 			}
 
 			// 書き出した overlay を render すると live に戻る
