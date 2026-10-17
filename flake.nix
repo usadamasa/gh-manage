@@ -77,6 +77,7 @@
               gosec
               govulncheck
               yamllint
+              check-jsonschema
               tools.spm-go
               tools.go-arch-metrics
             ];

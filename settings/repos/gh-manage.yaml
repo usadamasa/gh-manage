@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema.json
 # repository と rulesets は base のまま｡allowed_merge_methods は base の merge だけに合わせる (bootstrap の drift 修正)
 # GH_MANAGE_TOKEN は gh-manage 自身が使う secret で配布物ではないので宣言しない (prune.secrets: false なので残る)
 {}

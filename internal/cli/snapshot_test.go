@@ -106,7 +106,7 @@ func TestSnapshotCmd_Repo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Execute() error = %v", err)
 	}
-	want := "repository:\n  visibility: public\n  has_wiki: false\nsecrets:\n  TOKEN:\n    from_env: TOKEN\n"
+	want := "# yaml-language-server: $schema=../schema.json\nrepository:\n  visibility: public\n  has_wiki: false\nsecrets:\n  TOKEN:\n    from_env: TOKEN\n"
 	if got := readOverlay(t, dir, "a"); got != want {
 		t.Errorf("a.yaml =\n%s\nwant\n%s", got, want)
 	}
@@ -150,7 +150,7 @@ func TestSnapshotCmd_Minimize(t *testing.T) {
 	if _, _, err := execSnapshot(t, dir, "--repo", "a", "--minimize"); err != nil {
 		t.Fatalf("Execute() error = %v", err)
 	}
-	if got, want := readOverlay(t, dir, "a"), "repository:\n  has_wiki: false\n"; got != want {
+	if got, want := readOverlay(t, dir, "a"), "# yaml-language-server: $schema=../schema.json\nrepository:\n  has_wiki: false\n"; got != want {
 		t.Errorf("a.yaml =\n%s\nwant\n%s", got, want)
 	}
 }

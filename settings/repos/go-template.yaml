@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema.json
 # template リポジトリ｡allowed_merge_methods に squash と rebase を残し､required_status_checks に integration_id を付けないのは意図した差分
 repository:
   is_template: true

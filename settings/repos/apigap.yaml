@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema.json
 # ruleset が無かったので base の ruleset を乗せる｡CI の check 名が ci-status-check でない (ci) ので required_status_checks は付けない
 # has_projects / has_wiki は base に合わせて off にする (bootstrap の drift 修正)
 rulesets:

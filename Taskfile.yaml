@@ -26,6 +26,8 @@ tasks:
     desc: Run linters and architecture metrics
     cmds:
       - yamllint -c .yamllint.yaml .
+      - check-jsonschema --check-metaschema settings/schema.json
+      - check-jsonschema --schemafile settings/schema.json settings/base.yaml settings/repos/*.yaml
       - golangci-lint run --timeout 5m ./...
       - go-arch-lint check
       - analyze-arch-lint --strict .

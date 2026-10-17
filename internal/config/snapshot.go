@@ -7,13 +7,24 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
+// overlayHeader points editors at settings/schema.json. snapshot は overlay を丸ごと書き直すので毎回付ける。
+const overlayHeader = "# yaml-language-server: $schema=../schema.json\n"
+
 // EncodeOverlay encodes live settings as an overlay file. prune は live に無いので書かない｡
 func EncodeOverlay(live *Settings) ([]byte, error) {
 	n, err := overlayNode(live)
 	if err != nil {
 		return nil, err
 	}
-	return Encode(n)
+	return encodeOverlayFile(n)
+}
+
+func encodeOverlayFile(n *yaml.Node) ([]byte, error) {
+	data, err := Encode(n)
+	if err != nil {
+		return nil, err
+	}
+	return append([]byte(overlayHeader), data...), nil
 }
 
 // Minimize encodes live settings as an overlay that keeps only what differs from base.
@@ -35,7 +46,7 @@ func (c *Config) Minimize(live *Settings) ([]byte, error) {
 	base := merge(c.base, nil)
 	removeKey(base, "prune")
 	removeKey(base, "managed_topic")
-	return Encode(diff(base, n))
+	return encodeOverlayFile(diff(base, n))
 }
 
 func overlayNode(live *Settings) (*yaml.Node, error) {

@@ -1,2 +1,3 @@
+# yaml-language-server: $schema=../schema.json
 # repository と rulesets は base のまま｡ruleset の allowed_merge_methods と do_not_enforce_on_create は base に合わせる (bootstrap の drift 修正)
 {}
