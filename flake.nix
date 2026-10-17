@@ -17,7 +17,8 @@
       extraTools =
         pkgs:
         let
-          buildGoModule = pkgs.buildGoModule.override { go = pkgs.go_1_27; };
+          go = pkgs.go_1_27;
+          buildGoModule = pkgs.buildGoModule.override { inherit go; };
         in
         {
           spm-go = buildGoModule rec {
@@ -30,6 +31,13 @@
               hash = "sha256-lg6UX8N7Rys4wEUEdKmNoLzrURcqjS/9eyIKCMNFW3A=";
             };
             vendorHash = "sha256-EuHp0OPyVln/ytK9Vav/5U7EsUc80g3LVWGMqdpY3dg=";
+            # -trimpath でビルドすると GOROOT が埋め込まれず、spm-go はパッケージ 0 件の表を exit 0 で出す。
+            # go install 版と同じく、ビルドした Go の GOROOT を既定にする
+            allowGoReference = true;
+            nativeBuildInputs = [ pkgs.makeWrapper ];
+            postFixup = ''
+              wrapProgram $out/bin/spm-go --set-default GOROOT ${go}/share/go
+            '';
           };
 
           go-arch-metrics = buildGoModule rec {

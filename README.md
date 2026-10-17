@@ -123,8 +123,8 @@ workflow は `.github/workflows/settings.yaml`｡secret の置き場所と job �
 - flakes を有効にした [Nix](https://nixos.org/)
 - [direnv](https://direnv.net/) + [nix-direnv](https://github.com/nix-community/nix-direnv) (任意)
 
-Go と lint・CI のツールは `flake.nix` の devShell で揃える｡版は `flake.lock` が固定する nixpkgs で決まり､
-CI も同じ flake を使う｡nixpkgs に無い spm-go と analyze-* は `flake.nix` でソースからビルドする｡
+Go と lint・CI のツールは `flake.nix` の devShell で揃える。版は `flake.lock` が固定する nixpkgs で決まり、
+CI も同じ flake を使う。nixpkgs に無い spm-go と analyze-* は `flake.nix` でソースからビルドする。
 
 ### セットアップ
 
@@ -132,7 +132,7 @@ CI も同じ flake を使う｡nixpkgs に無い spm-go と analyze-* は `flake
 direnv allow
 ```
 
-ツールの版を上げるときは `task nix:update` で `flake.lock` を更新する｡
+ツールの版を上げるときは `task nix:update` で `flake.lock` を更新する。
 
 ### コマンド
 

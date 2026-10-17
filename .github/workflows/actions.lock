@@ -10,7 +10,8 @@ workflows:
         - 'nicknovitski/nix-develop@v1.2.1'
     '.github/workflows/settings.yaml':
         - 'actions/checkout@v7.0.1'
-        - 'actions/setup-go@v7.0.0'
+        - 'determinatesystems/nix-installer-action@v23'
+        - 'nicknovitski/nix-develop@v1.2.1'
     '.github/workflows/workbench.yaml':
         - 'actions/checkout@v7.0.1'
 dependencies:
@@ -19,11 +20,6 @@ dependencies:
         commit: 'sha1-3d3c42e5aac5ba805825da76410c181273ba90b1'
         owner_id: 44036562
         repo_id: 197814629
-    'actions/setup-go@v7.0.0':
-        ref: 'v7.0.0'
-        commit: 'sha1-b7ad1dad31e06c5925ef5d2fc7ad053ef454303e'
-        owner_id: 44036562
-        repo_id: 192624594
     'actions/upload-artifact@v7.0.1':
         ref: 'v7.0.1'
         commit: 'sha1-043fb46d1a93c77aae656e7c1c64a875d1fc6a0a'
