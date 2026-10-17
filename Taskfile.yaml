@@ -6,10 +6,6 @@ vars:
   BINARY_NAME: gh-manage
   MAIN_PKG: ./cmd/gh-manage
 
-env:
-  # ローカルレジストリ (aqua/registry.yaml) のパッケージを許可する｡CI は direnv を通らない｡
-  AQUA_POLICY_CONFIG: '{{.TASKFILE_DIR}}/aqua/policy.yaml'
-
 tasks:
   default:
     desc: Show available tasks
@@ -63,6 +59,11 @@ tasks:
       - task: lint
       - task: test
       - task: build
+
+  nix:update:
+    desc: Update nixpkgs in flake.lock (bumps Go and the lint tools)
+    cmds:
+      - nix flake update
 
   clean:
     desc: Remove build artifacts

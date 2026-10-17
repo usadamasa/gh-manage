@@ -32,7 +32,7 @@ task format   # go mod tidy, goimports, go fmt
 task ci       # format + lint + test + build
 ```
 
-ツールは aqua で固定する (`aqua install`)｡`.envrc` が PATH と `AQUA_POLICY_CONFIG` を通す｡
+ツールは `flake.nix` の devShell で固定する｡`.envrc` (nix-direnv の `use flake`) が PATH を通す｡
 
 ## コード規約
 
