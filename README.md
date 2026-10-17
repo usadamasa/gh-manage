@@ -18,6 +18,7 @@ Terraform のような state ファイルは持たず､毎回 GitHub API から
 
 ```text
 settings/
+  schema.json        # エディタ補完用の JSON Schema
   base.yaml          # 全リポジトリ共通
   repos/<name>.yaml  # リポジトリごとの差分｡ファイルがある = 管理対象
 ```
@@ -34,6 +35,9 @@ overlay は base に deep merge する｡
 
 schema に無いキーはエラーにする (typo を apply の前に止める)｡`repository.name` は rename を防ぐため受け付けない｡
 合成結果は `gh-manage render [name]` で確認できる｡
+
+`settings/schema.json` は各ファイル先頭の `# yaml-language-server: $schema=...` から参照する (snapshot も書き出す)。
+1 ファイル単位の写しで、正は Go 側の検証にある。両者のずれは `internal/config/schema_json_test.go` が検出する。
 
 ```yaml
 # settings/base.yaml

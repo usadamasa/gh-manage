@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema.json
 # ruleset が無かったので base の ruleset を乗せる｡CI が無いので required_status_checks は付けない
 # has_projects / has_wiki / merge 方式 / allow_auto_merge / delete_branch_on_merge は base に合わせる (bootstrap の drift 修正)
 rulesets:

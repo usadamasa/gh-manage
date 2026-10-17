@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema.json
 # CI が無いので ruleset は required_status_checks を付けない｡include: [] (何も守っていない) は base の ~DEFAULT_BRANCH に直し､
 # rules を deletion だけから base と同じ 3 つに広げる｡merge 方式と allow_auto_merge は base に合わせる (bootstrap の drift 修正)
 repository:

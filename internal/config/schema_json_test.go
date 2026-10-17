@@ -104,7 +104,9 @@ func TestSchema_AgreesWithGo(t *testing.T) {
 		{name: "未知のキー", base: "foo: 1\n", wantSchemaErr: true, wantGoErr: true},
 		{name: "repository の未知のキー", base: "repository:\n  name: x\n", wantSchemaErr: true, wantGoErr: true},
 		{name: "visibility の enum", base: "repository:\n  visibility: internal\n", wantSchemaErr: true, wantGoErr: true},
-		{name: "bool に文字列", base: "repository:\n  has_issues: \"yes\"\n", wantSchemaErr: true, wantGoErr: true},
+		{name: "bool に文字列", base: "repository:\n  has_issues: maybe\n", wantSchemaErr: true, wantGoErr: true},
+		// yaml.v3 は bool の field に限って YAML 1.1 の yes / on を受ける。schema は true / false だけを勧める
+		{name: "bool に yes", base: "repository:\n  has_issues: \"yes\"\n", wantSchemaErr: true},
 		{name: "overlay の null で削除", base: "repository:\n  description: null\nrulesets: null\nsecrets:\n  X: null\n"},
 		{name: "managed_topic", base: "managed_topic: gh-managed\n"},
 		{name: "managed_topic の空文字", base: "managed_topic: \"\"\n"},

@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema.json
 repository:
   has_projects: true
   has_discussions: true

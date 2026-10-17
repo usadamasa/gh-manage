@@ -1,0 +1,171 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "gh-manage settings",
+  "description": "settings/base.yaml と settings/repos/<name>.yaml の schema。1 ファイル単位の検査で、merge 後の検査は gh-manage の Load / Render が行う。overlay は null で base のキーを消せる。",
+  "type": ["object", "null"],
+  "additionalProperties": false,
+  "properties": {
+    "prune": { "$ref": "#/definitions/prune" },
+    "managed_topic": {
+      "description": "管理下のリポジトリに必ず付ける topic。plan が desired の topics に足す。",
+      "anyOf": [{ "type": "null" }, { "const": "" }, { "$ref": "#/definitions/topic" }]
+    },
+    "repository": { "$ref": "#/definitions/repository" },
+    "topics": {
+      "type": ["array", "null"],
+      "items": { "type": "string" }
+    },
+    "rulesets": {
+      "description": "ruleset の名前から ruleset への map。",
+      "type": ["object", "null"],
+      "additionalProperties": { "$ref": "#/definitions/ruleset" }
+    },
+    "variables": {
+      "description": "Actions variable。値は平文か from_env。",
+      "type": ["object", "null"],
+      "propertyNames": { "$ref": "#/definitions/actions_name" },
+      "additionalProperties": {
+        "anyOf": [
+          { "type": ["string", "number", "boolean", "null"] },
+          { "$ref": "#/definitions/from_env" }
+        ]
+      }
+    },
+    "secrets": { "$ref": "#/definitions/secrets" },
+    "dependabot_secrets": { "$ref": "#/definitions/secrets" }
+  },
+  "definitions": {
+    "env_name": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "actions_name": {
+      "description": "英数字と _ で、数字や GITHUB_ (大文字小文字を問わない) で始められない。",
+      "allOf": [
+        { "$ref": "#/definitions/env_name" },
+        { "not": { "pattern": "^[Gg][Ii][Tt][Hh][Uu][Bb]_" } }
+      ]
+    },
+    "topic": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,49}$"
+    },
+    "from_env": {
+      "description": "plan / apply のときに読む環境変数。",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from_env"],
+      "properties": {
+        "from_env": { "$ref": "#/definitions/env_name" }
+      }
+    },
+    "prune": {
+      "description": "宣言していないリソースを消すかを種類ごとに決める。既定は false。",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "rulesets": { "type": ["boolean", "null"] },
+        "variables": { "type": ["boolean", "null"] },
+        "secrets": { "type": ["boolean", "null"] },
+        "dependabot_secrets": { "type": ["boolean", "null"] }
+      }
+    },
+    "repository": {
+      "description": "PATCH /repos/{owner}/{repo} のフィールド。書かないキーは plan で比べない。",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "description": { "type": ["string", "null"] },
+        "homepage": { "type": ["string", "null"] },
+        "visibility": { "type": ["string", "null"], "enum": ["public", "private", null] },
+        "has_issues": { "type": ["boolean", "null"] },
+        "has_projects": { "type": ["boolean", "null"] },
+        "has_wiki": { "type": ["boolean", "null"] },
+        "has_discussions": { "type": ["boolean", "null"] },
+        "is_template": { "type": ["boolean", "null"] },
+        "default_branch": { "type": ["string", "null"] },
+        "allow_squash_merge": { "type": ["boolean", "null"] },
+        "allow_merge_commit": { "type": ["boolean", "null"] },
+        "allow_rebase_merge": { "type": ["boolean", "null"] },
+        "allow_auto_merge": { "type": ["boolean", "null"] },
+        "delete_branch_on_merge": { "type": ["boolean", "null"] },
+        "allow_update_branch": { "type": ["boolean", "null"] },
+        "allow_forking": { "type": ["boolean", "null"] },
+        "web_commit_signoff_required": { "type": ["boolean", "null"] },
+        "squash_merge_commit_title": { "type": ["string", "null"] },
+        "squash_merge_commit_message": { "type": ["string", "null"] },
+        "merge_commit_title": { "type": ["string", "null"] },
+        "merge_commit_message": { "type": ["string", "null"] }
+      }
+    },
+    "ruleset": {
+      "description": "repository ruleset。target と enforcement は base と overlay を merge した結果に必須。",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "target": { "type": "string", "enum": ["branch", "tag", "push"] },
+        "enforcement": { "type": "string", "enum": ["active", "evaluate", "disabled"] },
+        "bypass_actors": {
+          "type": ["array", "null"],
+          "items": { "$ref": "#/definitions/bypass_actor" }
+        },
+        "conditions": { "$ref": "#/definitions/conditions" },
+        "rules": {
+          "description": "list は merge せず overlay の値で丸ごと置き換わる。",
+          "type": ["array", "null"],
+          "items": { "$ref": "#/definitions/rule" }
+        }
+      }
+    },
+    "bypass_actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": { "type": ["integer", "null"] },
+        "actor_type": { "type": "string" },
+        "bypass_mode": { "type": "string" }
+      }
+    },
+    "conditions": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "ref_name": { "$ref": "#/definitions/ref_name" }
+      }
+    },
+    "ref_name": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "include": { "type": ["array", "null"], "items": { "type": "string" } },
+        "exclude": { "type": ["array", "null"], "items": { "type": "string" } }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 },
+        "parameters": {
+          "description": "rulesets API の parameters をそのまま渡す。",
+          "type": ["object", "null"]
+        }
+      }
+    },
+    "secrets": {
+      "description": "secret の名前から値の出所への map。平文の値は書けない。",
+      "type": ["object", "null"],
+      "propertyNames": { "$ref": "#/definitions/actions_name" },
+      "additionalProperties": { "$ref": "#/definitions/secret" }
+    },
+    "secret": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["from_env"],
+      "properties": {
+        "from_env": { "$ref": "#/definitions/env_name" }
+      }
+    }
+  }
+}
