@@ -58,6 +58,9 @@ gh-manage リポジトリの Actions secret に置く｡
 gh secret set GH_MANAGE_TOKEN --repo usadamasa/gh-manage
 ```
 
+`GH_MANAGE_TOKEN` と下の `WORKBENCH_TOKEN` は gh-manage が値を配らないので､`settings/repos/gh-manage.yaml` の
+`data.secrets` に並べてある (plan に未宣言の notice が出ず､消えていれば plan がエラーになる)｡
+
 配布する secret の名前を settings に足したら､同じ名前で gh-manage の Actions secret にも値を置く｡
 workflow は secret を同名の環境変数として gh-manage に渡す｡
 

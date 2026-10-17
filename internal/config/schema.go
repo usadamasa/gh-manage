@@ -15,6 +15,7 @@ import (
 // Settings is the desired state of one repository: base.yaml merged with repos/<name>.yaml.
 type Settings struct {
 	Prune Prune `yaml:"prune"`
+	Data  Data  `yaml:"data,omitempty"`
 	// ManagedTopic is a topic every managed repository carries so that they can be told apart on GitHub.
 	// plan が desired の topics に足す (topics を宣言していなければ live の topics に足す)｡render には出ない｡
 	ManagedTopic      string             `yaml:"managed_topic,omitempty"`
@@ -32,6 +33,15 @@ type Prune struct {
 	Variables         bool `yaml:"variables"`
 	Secrets           bool `yaml:"secrets"`
 	DependabotSecrets bool `yaml:"dependabot_secrets"`
+}
+
+// Data lists, per kind, resources that gh-manage does not manage but expects to exist.
+// Terraform の data source と同じく作らず消さず (prune でも消さない)､live に無ければ plan をエラーにする｡
+type Data struct {
+	Rulesets          []string `yaml:"rulesets,omitempty"`
+	Variables         []string `yaml:"variables,omitempty"`
+	Secrets           []string `yaml:"secrets,omitempty"`
+	DependabotSecrets []string `yaml:"dependabot_secrets,omitempty"`
 }
 
 // Repository holds the fields of PATCH /repos/{owner}/{repo}.
@@ -238,7 +248,43 @@ func (s *Settings) validate() error {
 	errs = append(errs, validateSecrets("secrets", s.Secrets)...)
 	errs = append(errs, validateSecrets("dependabot_secrets", s.DependabotSecrets)...)
 	errs = append(errs, validateRulesets(s.Rulesets)...)
+	errs = append(errs, validateData("rulesets", s.Data.Rulesets, hasKey(s.Rulesets), validateRulesetName)...)
+	errs = append(errs, validateData("variables", s.Data.Variables, hasKey(s.Variables), validateActionsName)...)
+	errs = append(errs, validateData("secrets", s.Data.Secrets, hasKey(s.Secrets), validateActionsName)...)
+	errs = append(errs, validateData("dependabot_secrets", s.Data.DependabotSecrets, hasKey(s.DependabotSecrets), validateActionsName)...)
 	return errors.Join(errs...)
+}
+
+// validateData checks the names of data.<section>. 同じ名前を section にも書くと管理するのかしないのかが決まらない｡
+func validateData(section string, names []string, declared func(string) bool, validName func(kind, name string) error) []error {
+	kind := "data." + section
+	var errs []error
+	seen := map[string]bool{}
+	for _, name := range names {
+		errs = append(errs, validName(kind, name))
+		if seen[name] {
+			errs = append(errs, fmt.Errorf("%s.%s: 重複している", kind, name))
+		}
+		seen[name] = true
+		if declared(name) {
+			errs = append(errs, fmt.Errorf("%s.%s: %s にも宣言されている｡管理するなら data から外す", kind, name, section))
+		}
+	}
+	return errs
+}
+
+func hasKey[V any](m map[string]V) func(string) bool {
+	return func(name string) bool {
+		_, ok := m[name]
+		return ok
+	}
+}
+
+func validateRulesetName(kind, name string) error {
+	if name == "" {
+		return fmt.Errorf("%s: 名前が空", kind)
+	}
+	return nil
 }
 
 func validateRepository(r Repository) []error {

@@ -104,6 +104,12 @@ func TestMinimize(t *testing.T) {
 			want: "topics:\n  - go\n",
 		},
 		{
+			name: "data は live に無い宣言なので overlay に null で書かない",
+			base: testBase + "data:\n  secrets: [OUTSIDE]\n",
+			live: func(*Settings) {},
+			want: "{}\n",
+		},
+		{
 			name: "live の topics が marker だけなら topics を書かない",
 			base: testBase + "managed_topic: gh-managed\n",
 			live: func(s *Settings) { s.Topics = []string{"gh-managed"} },
@@ -158,7 +164,9 @@ func TestMinimize(t *testing.T) {
 }
 
 // normalize treats empty and nil collections as the same, as YAML does, and drops the marker topic.
+// data は live に無い宣言なので比較から外す｡
 func normalize(s *Settings, marker string) {
+	s.Data = Data{}
 	if len(s.Secrets) == 0 {
 		s.Secrets = nil
 	}

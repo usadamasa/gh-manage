@@ -61,6 +61,9 @@ Exit code: 0 = no difference, 2 = differences found, 1 = error.`,
 			if err := write(cmd, plans); err != nil {
 				return err
 			}
+			if planned.missingData != nil {
+				return planned.missingData
+			}
 			for _, p := range plans {
 				if p.HasChanges() {
 					return errDrift
@@ -79,6 +82,8 @@ type planned struct {
 	entries []plannedRepo
 	// missingEnv は環境変数が無い from_env variable｡plan は notice で済ませ､apply は書き込み前に止める
 	missingEnv error
+	// missingData は live に無い data｡plan は全リポジトリの plan を出してからエラーにし､apply は書き込み前に止める
+	missingData error
 }
 
 type plannedRepo struct {
@@ -114,6 +119,7 @@ func buildPlans(ctx context.Context, cfg *config.Config, client *github.Client) 
 	}
 
 	out := planned{owner: owner, missingEnv: missingEnv}
+	var missingData []error
 	for _, name := range cfg.Names() {
 		desired := rendered[name]
 		var p reconcile.RepoPlan
@@ -121,6 +127,7 @@ func buildPlans(ctx context.Context, cfg *config.Config, client *github.Client) 
 		switch {
 		case !exists:
 			p = reconcile.Plan(name, desired, nil)
+			missingData = append(missingData, reconcile.CheckData(name, desired, nil))
 		case repo.Archived:
 			p = reconcile.Skip(name, "archived なので skip")
 		default:
@@ -129,9 +136,11 @@ func buildPlans(ctx context.Context, cfg *config.Config, client *github.Client) 
 				return planned{}, err
 			}
 			p = reconcile.Plan(name, desired, live)
+			missingData = append(missingData, reconcile.CheckData(name, desired, live))
 		}
 		out.entries = append(out.entries, plannedRepo{plan: p, desired: desired})
 	}
+	out.missingData = errors.Join(missingData...)
 	return out, nil
 }
 

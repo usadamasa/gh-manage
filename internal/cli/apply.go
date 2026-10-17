@@ -56,6 +56,9 @@ func runApply(cmd *cobra.Command, settingsDir string, newClient clientFactory, o
 	if planned.missingEnv != nil {
 		return planned.missingEnv
 	}
+	if planned.missingData != nil {
+		return planned.missingData
+	}
 	plans := planned.plans()
 	if !opts.allowPublish {
 		// 1 件でも該当すれば､何も書き込まずに止める

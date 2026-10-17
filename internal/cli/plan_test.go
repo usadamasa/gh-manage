@@ -101,6 +101,25 @@ func TestPlanCmd_MissingEnv(t *testing.T) {
 	}
 }
 
+// data の名前が live に無ければ plan はエラー (exit 1)｡ほかのリポジトリの plan は出してから止める
+func TestPlanCmd_MissingData(t *testing.T) {
+	dir := t.TempDir()
+	writeFiles(t, dir, map[string]string{
+		"base.yaml":    "{}\n",
+		"repos/a.yaml": "data:\n  secrets: [TOKEN, GONE]\n",
+	})
+	out, err := execPlan(t, dir)
+	if got := ExitCode(err); got != 1 {
+		t.Fatalf("ExitCode(%v) = %d, want 1", err, got)
+	}
+	if want := "a: data secret GONE が live に無い"; err.Error() != want {
+		t.Errorf("error = %q, want %q", err, want)
+	}
+	if want := "a: = no change\n"; out != want {
+		t.Errorf("output =\n%s\nwant\n%s", out, want)
+	}
+}
+
 func TestPlanCmd_JSON(t *testing.T) {
 	dir := t.TempDir()
 	writeFiles(t, dir, map[string]string{"base.yaml": "{}\n", "repos/a.yaml": "repository:\n  has_wiki: true\n"})

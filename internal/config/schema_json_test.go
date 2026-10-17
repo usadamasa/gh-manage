@@ -127,6 +127,16 @@ func TestSchema_AgreesWithGo(t *testing.T) {
 		{name: "secret の from_env 無し", base: "secrets:\n  A: {}\n", wantSchemaErr: true, wantGoErr: true},
 		{name: "secret の from_env の pattern", base: "dependabot_secrets:\n  A:\n    from_env: 1BAD\n", wantSchemaErr: true, wantGoErr: true},
 		{name: "secret の GITHUB_ 接頭辞", base: "secrets:\n  GITHUB_X:\n    from_env: X\n", wantSchemaErr: true, wantGoErr: true},
+		{name: "data", base: "data:\n  rulesets: [legacy main]\n  variables: [V]\n  secrets: [S]\n  dependabot_secrets: [D]\n"},
+		{name: "data の null で削除", base: "data:\n  secrets: null\n"},
+		{name: "data の未知のキー", base: "data:\n  topics: [x]\n", wantSchemaErr: true, wantGoErr: true},
+		{name: "data の値が map", base: "data:\n  secrets:\n    S: {}\n", wantSchemaErr: true, wantGoErr: true},
+		{name: "data の secret の GITHUB_ 接頭辞", base: "data:\n  secrets: [GITHUB_X]\n", wantSchemaErr: true, wantGoErr: true},
+		{name: "data の variable の名前が数字で始まる", base: "data:\n  variables: [1A]\n", wantSchemaErr: true, wantGoErr: true},
+		{name: "data の重複", base: "data:\n  secrets: [S, S]\n", wantSchemaErr: true, wantGoErr: true},
+		// 別のセクションとの衝突は merge 後にしか決まらない
+		{name: "data と secrets の両方に同じ名前", base: "secrets:\n  S:\n    from_env: S\ndata:\n  secrets: [S]\n", wantGoErr: true},
+		{name: "data と rulesets の両方に同じ名前", base: "rulesets:\n  r:\n    target: branch\n    enforcement: active\ndata:\n  rulesets: [r]\n", wantGoErr: true},
 	}
 	sch := compileSchema(t)
 	for _, tt := range tests {
@@ -172,6 +182,7 @@ func TestSchema_PropertiesMatchStructs(t *testing.T) {
 	}{
 		{reflect.TypeFor[Settings](), "/"},
 		{reflect.TypeFor[Prune](), "/definitions/prune"},
+		{reflect.TypeFor[Data](), "/definitions/data"},
 		{reflect.TypeFor[Repository](), "/definitions/repository"},
 		{reflect.TypeFor[Ruleset](), "/definitions/ruleset"},
 		{reflect.TypeFor[BypassActor](), "/definitions/bypass_actor"},

@@ -1,0 +1,5 @@
+data_prune:
+  - delete ruleset old
+  - delete variable BAR
+  - delete secret OLD_SECRET
+  - delete dependabot_secret OLD_TOKEN

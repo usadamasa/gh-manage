@@ -2,6 +2,7 @@
 package reconcile
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"slices"
@@ -62,9 +63,32 @@ func Plan(repo string, desired, live *config.Settings) RepoPlan {
 	p.planTopics(desiredTopics(desired, live.Topics), live.Topics)
 	p.planRulesets(desired, live)
 	p.planVariables(desired, live)
-	p.planSecrets(KindSecret, "secrets", desired.Secrets, live.Secrets, desired.Prune.Secrets)
-	p.planSecrets(KindDependabotSecret, "dependabot_secrets", desired.DependabotSecrets, live.DependabotSecrets, desired.Prune.DependabotSecrets)
+	p.planSecrets(KindSecret, "secrets", desired.Secrets, live.Secrets, desired.Data.Secrets, desired.Prune.Secrets)
+	p.planSecrets(KindDependabotSecret, "dependabot_secrets", desired.DependabotSecrets, live.DependabotSecrets, desired.Data.DependabotSecrets, desired.Prune.DependabotSecrets)
 	return *p
+}
+
+// CheckData reports every data resource that live does not have. live が nil ならリポジトリが無いので全部無い｡
+func CheckData(repo string, desired, live *config.Settings) error {
+	if live == nil {
+		live = &config.Settings{}
+	}
+	var errs []error
+	errs = append(errs, missingData(repo, "ruleset", desired.Data.Rulesets, live.Rulesets)...)
+	errs = append(errs, missingData(repo, "variable", desired.Data.Variables, live.Variables)...)
+	errs = append(errs, missingData(repo, KindSecret, desired.Data.Secrets, live.Secrets)...)
+	errs = append(errs, missingData(repo, KindDependabotSecret, desired.Data.DependabotSecrets, live.DependabotSecrets)...)
+	return errors.Join(errs...)
+}
+
+func missingData[V any](repo, kind string, names []string, live map[string]V) []error {
+	var errs []error
+	for _, name := range names {
+		if _, ok := live[name]; !ok {
+			errs = append(errs, fmt.Errorf("%s: data %s %s が live に無い", repo, kind, name))
+		}
+	}
+	return errs
 }
 
 func (p *RepoPlan) add(c Change) {
@@ -154,7 +178,7 @@ func (p *RepoPlan) planRulesets(desired, live *config.Settings) {
 		}
 	}
 	for _, name := range sortedKeys(live.Rulesets) {
-		if _, ok := desired.Rulesets[name]; !ok {
+		if _, ok := desired.Rulesets[name]; !ok && !slices.Contains(desired.Data.Rulesets, name) {
 			p.undeclared("ruleset", "rulesets", name, desired.Prune.Rulesets)
 		}
 	}
@@ -175,21 +199,21 @@ func (p *RepoPlan) planVariables(desired, live *config.Settings) {
 		}
 	}
 	for _, name := range sortedKeys(live.Variables) {
-		if _, ok := desired.Variables[name]; !ok {
+		if _, ok := desired.Variables[name]; !ok && !slices.Contains(desired.Data.Variables, name) {
 			p.undeclared("variable", "variables", name, desired.Prune.Variables)
 		}
 	}
 }
 
 // planSecrets compares only presence: the API does not return secret values.
-func (p *RepoPlan) planSecrets(kind, section string, desired, live config.Secrets, prune bool) {
+func (p *RepoPlan) planSecrets(kind, section string, desired, live config.Secrets, data []string, prune bool) {
 	for _, name := range sortedKeys(desired) {
 		if _, ok := live[name]; !ok {
 			p.add(Change{Op: OpCreate, Kind: kind, Name: name})
 		}
 	}
 	for _, name := range sortedKeys(live) {
-		if _, ok := desired[name]; !ok {
+		if _, ok := desired[name]; !ok && !slices.Contains(data, name) {
 			p.undeclared(kind, section, name, prune)
 		}
 	}
