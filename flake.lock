@@ -1,6 +1,40 @@
 {
   "nodes": {
+    "go-arch-metrics": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1792314183,
+        "narHash": "sha256-RwzH+GU1OeoPxZ/Hxr1Z/h4h3R6W1oU+mD1WqGxE5/k=",
+        "owner": "usadamasa",
+        "repo": "go-arch-metrics",
+        "rev": "e16d63e423d54a18550aa75273e193166b0efc21",
+        "type": "github"
+      },
+      "original": {
+        "owner": "usadamasa",
+        "repo": "go-arch-metrics",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
+      "locked": {
+        "lastModified": 1791956154,
+        "narHash": "sha256-jBYGPi4udQ9uo4KQp9m2J0546nJVQitG15gvZSaVVAs=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "55bfb4d7437bd4e09ab7cba58a43bd68eb310044",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
       "locked": {
         "lastModified": 1791956154,
         "narHash": "sha256-jBYGPi4udQ9uo4KQp9m2J0546nJVQitG15gvZSaVVAs=",
@@ -18,7 +52,8 @@
     },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs"
+        "go-arch-metrics": "go-arch-metrics",
+        "nixpkgs": "nixpkgs_2"
       }
     }
   },

@@ -36,9 +36,9 @@ tasks:
       - gosec -quiet ./...
 
   metrics:
-    desc: Print package metrics (Ca/Ce/A/I/D)
+    desc: Print package metrics (Ca/Ce/A/I/D) as JSON
     cmds:
-      - spm-go all
+      - analyze-modularity .
 
   format:
     desc: Format code

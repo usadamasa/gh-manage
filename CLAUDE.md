@@ -27,7 +27,7 @@ gh-manage は､自分 (usadamasa) が保有する GitHub リポジトリの設�
 task build    # bin/gh-manage をビルド
 task test     # テスト (race + cover)
 task lint     # yamllint, golangci-lint, go-arch-lint, analyze-*, govulncheck, gosec
-task metrics  # spm-go でパッケージメトリクスを表示
+task metrics  # analyze-modularity でパッケージメトリクス (Ca/Ce/A/I/D) を表示
 task format   # go mod tidy, goimports, go fmt
 task ci       # format + lint + test + build
 ```
