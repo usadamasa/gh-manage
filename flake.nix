@@ -27,7 +27,7 @@
             src = pkgs.fetchFromGitHub {
               owner = "usadamasa";
               repo = "go-arch-metrics";
-              # カレンダー版の tag は semver ではないので、tag の commit で固定する
+              # 2026.1018.1 の tag の commit。tag は付け替えられるので commit で固定する
               rev = "bae94cae339b9e0be5d5958ab09c8533c7376767";
               hash = "sha256-QvqTMBZK4cIihrQ6FINL6Cbp/vULsvGp1j9htTKsRtQ=";
             };
