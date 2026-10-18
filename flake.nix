@@ -21,38 +21,23 @@
           buildGoModule = pkgs.buildGoModule.override { inherit go; };
         in
         {
-          spm-go = buildGoModule rec {
-            pname = "spm-go";
-            version = "0.11.1";
-            src = pkgs.fetchFromGitHub {
-              owner = "fdaines";
-              repo = "spm-go";
-              rev = "v${version}";
-              hash = "sha256-lg6UX8N7Rys4wEUEdKmNoLzrURcqjS/9eyIKCMNFW3A=";
-            };
-            vendorHash = "sha256-EuHp0OPyVln/ytK9Vav/5U7EsUc80g3LVWGMqdpY3dg=";
-            # -trimpath でビルドすると GOROOT が埋め込まれず、spm-go はパッケージ 0 件の表を exit 0 で出す。
-            # go install 版と同じく、ビルドした Go の GOROOT を既定にする
-            allowGoReference = true;
-            nativeBuildInputs = [ pkgs.makeWrapper ];
-            postFixup = ''
-              wrapProgram $out/bin/spm-go --set-default GOROOT ${go}/share/go
-            '';
-          };
-
-          go-arch-metrics = buildGoModule rec {
+          go-arch-metrics = buildGoModule {
             pname = "go-arch-metrics";
-            version = "2026.0919.3";
+            version = "2026.1018.1";
             src = pkgs.fetchFromGitHub {
               owner = "usadamasa";
               repo = "go-arch-metrics";
-              rev = version;
-              hash = "sha256-VXmnHI7sm4SYiQihzppyoMvBXKOUuqQJJaBhMSfGf4k=";
+              # カレンダー版の tag は semver ではないので、tag の commit で固定する
+              rev = "bae94cae339b9e0be5d5958ab09c8533c7376767";
+              hash = "sha256-QvqTMBZK4cIihrQ6FINL6Cbp/vULsvGp1j9htTKsRtQ=";
             };
-            vendorHash = "sha256-g+yaVIx4jxpAQ/+WrGKxhVeliYx7nLQe/zsGpxV4Fn4=";
+            vendorHash = "sha256-lAik/wRbmvSPkZe8XiXUCUp13BQiD97yWy57fvaF0H0=";
+            # analyze-modularity は git が ignore するパッケージを git で調べる。テストも git を呼ぶ
+            nativeCheckInputs = [ pkgs.git ];
             subPackages = [
               "cmd/analyze-arch-lint"
               "cmd/analyze-modularity"
+              "cmd/vulncheck"
             ];
           };
         };
@@ -78,7 +63,6 @@
               govulncheck
               yamllint
               check-jsonschema
-              tools.spm-go
               tools.go-arch-metrics
             ];
             env.GOTOOLCHAIN = "local";

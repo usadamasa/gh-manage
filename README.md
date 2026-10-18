@@ -130,7 +130,7 @@ workflow は `.github/workflows/settings.yaml`｡secret の置き場所と job �
 - [direnv](https://direnv.net/) + [nix-direnv](https://github.com/nix-community/nix-direnv) (任意)
 
 Go と lint・CI のツールは `flake.nix` の devShell で揃える。版は `flake.lock` が固定する nixpkgs で決まり、
-CI も同じ flake を使う。nixpkgs に無い spm-go と analyze-* は `flake.nix` でソースからビルドする。
+CI も同じ flake を使う。nixpkgs に無い go-arch-metrics (analyze-*、vulncheck) は `flake.nix` でソースからビルドする。
 
 ### セットアップ
 
@@ -146,7 +146,7 @@ direnv allow
 task build    # bin/gh-manage をビルド
 task test     # テスト
 task lint     # yamllint, golangci-lint, go-arch-lint, analyze-*, govulncheck, gosec
-task metrics  # spm-go でパッケージメトリクスを表示
+task metrics  # analyze-modularity でパッケージメトリクス (Ca/Ce/A/I/D) を表示
 task format   # go mod tidy, goimports, go fmt
 task ci       # format + lint + test + build
 ```
