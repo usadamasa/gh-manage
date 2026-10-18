@@ -64,6 +64,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          # analyze-modularity は揮発性を git の履歴から測る。shallow clone だと判定が効かない
+          fetch-depth: 0
 
       - uses: $/.github/actions/setup-nix
 
