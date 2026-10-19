@@ -237,7 +237,7 @@ var (
 	rulesetEnforcemts = []string{"active", "evaluate", "disabled"}
 )
 
-// validate checks values that the YAML schema alone cannot.
+// validate checks values that decoding into Settings alone cannot.
 func (s *Settings) validate() error {
 	var errs []error
 	if t := s.ManagedTopic; t != "" && !topicPattern.MatchString(t) {

@@ -25,8 +25,8 @@ func (c *Config) ManagedTopic() string {
 }
 
 // Load reads <dir>/base.yaml and <dir>/repos/*.yaml.
-// A file under repos/ means the repository is managed. Each file is checked
-// against the schema so that a typo fails here, not at apply.
+// A file under repos/ means the repository is managed. Each file is decoded
+// strictly into Settings so that a typo fails here, not at apply.
 //
 // os.Root は使わない｡Go 1.24 の os.Root には未修正の脆弱性があり govulncheck が落ちる｡
 // dir は利用者が指定する settings ディレクトリそのものなので､閉じ込める必要も無い｡
@@ -51,7 +51,7 @@ func Load(dir string) (*Config, error) {
 	return cfg, nil
 }
 
-// loadFile reads a YAML map and checks it against the schema. It returns the raw node and the decoded settings.
+// loadFile reads a YAML map and decodes it strictly into Settings. It returns the raw node and the decoded settings.
 func loadFile(path string) (*yaml.Node, *Settings, error) {
 	data, err := os.ReadFile(path) // #nosec G304 -- path は利用者が指定した settings ディレクトリの中
 	if err != nil {
@@ -68,7 +68,7 @@ func loadFile(path string) (*yaml.Node, *Settings, error) {
 	return n, &s, nil
 }
 
-// decodeStrict decodes data into out, rejecting keys that are not in the schema.
+// decodeStrict decodes data into out, rejecting keys that Settings does not define.
 // An empty document is accepted.
 func decodeStrict(data []byte, out *Settings) error {
 	dec := yaml.NewDecoder(bytes.NewReader(data))
