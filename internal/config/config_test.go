@@ -59,12 +59,12 @@ func TestLoad_Errors(t *testing.T) {
 		wantErr  []string
 	}{
 		{
-			name:    "base の schema に無いキー",
+			name:    "base の定義に無いキー",
 			base:    "repository:\n  has_wikii: false\n",
 			wantErr: []string{"base.yaml", "has_wikii"},
 		},
 		{
-			name:     "overlay の schema に無いキー",
+			name:     "overlay の定義に無いキー",
 			base:     testBase,
 			overlays: map[string]string{"foo": "rulesetz: {}\n"},
 			wantErr:  []string{"foo.yaml", "rulesetz"},
@@ -100,7 +100,7 @@ func TestLoad_Errors(t *testing.T) {
 			wantErr:  []string{"foo.yaml", "FOO", "from_env"},
 		},
 		{
-			name:     "ruleset の中の schema に無いキー",
+			name:     "ruleset の中の定義に無いキー",
 			base:     testBase,
 			overlays: map[string]string{"foo": "rulesets:\n  main:\n    enforcment: active\n"},
 			wantErr:  []string{"foo.yaml", "enforcment"},

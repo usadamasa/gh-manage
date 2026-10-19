@@ -1,5 +1,5 @@
 // Package config loads settings/base.yaml and settings/repos/<name>.yaml,
-// merges them, and validates the result against the schema.
+// merges them, and validates the result with decodeStrict and validate.
 package config
 
 import (

@@ -33,7 +33,7 @@ overlay は base に deep merge する｡
 - `managed_topic` の topic は plan が desired の topics に足す (`topics` を宣言していないリポジトリは live の topics に足す)｡
   `render` と snapshot の overlay には出ない
 
-schema に無いキーはエラーにする (typo を apply の前に止める)｡`repository.name` は rename を防ぐため受け付けない｡
+定義に無いキーは読み込みでエラーにする (typo を apply の前に止める)｡`repository.name` は rename を防ぐため受け付けない｡
 合成結果は `gh-manage render [name]` で確認できる｡
 
 `settings/schema.json` は各ファイル先頭の `# yaml-language-server: $schema=...` から参照する (snapshot も書き出す)。
@@ -68,7 +68,7 @@ variables:                  # Actions の variable｡値は平文か from_env (p
   GO_VERSION: "1.24"
   TAGPR_CLIENT_ID:
     from_env: TAGPR_CLIENT_ID
-secrets:                    # 値は環境変数から読む｡受け付けるのは from_env だけで､平文の値は schema 検証で弾く
+secrets:                    # 値は環境変数から読む｡受け付けるのは from_env だけで､平文の値は読み込みで弾く
   TAGPR_PRIVATE_KEY:
     from_env: TAGPR_PRIVATE_KEY
 dependabot_secrets:         # Dependabot の secret｡書き方は secrets と同じ
