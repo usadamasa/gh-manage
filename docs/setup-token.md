@@ -53,13 +53,31 @@ gh-manage リポジトリの Actions secret に置く｡
 | --- | --- |
 | `GH_MANAGE_TOKEN` | 上で作った fine-grained PAT |
 | `TAGPR_PRIVATE_KEY` | 配布する secret の値 (settings の `from_env: TAGPR_PRIVATE_KEY` が参照する) |
+| `GH_AUTOMATION_TOKEN` | 配布する secret の値 (settings の `from_env: GH_AUTOMATION_TOKEN` が参照する)｡作り方は下 |
 
 ```bash
 gh secret set GH_MANAGE_TOKEN --repo usadamasa/gh-manage
 ```
 
+`GH_AUTOMATION_TOKEN` は､配布先の workflow が push や PR の作成をして CI を走らせるための fine-grained PAT｡
+`GITHUB_TOKEN` で作った PR では CI が走らないので PAT を渡す｡今の使い道は private のリポジトリで
+flake.lock を上げる workflow (DeterminateSystems/update-flake-lock)｡Dependabot の nix は private に対応しない｡
+
+| 項目 | 値 |
+| --- | --- |
+| Token name | 任意 (用途を限らない名前にする) |
+| Resource owner | `usadamasa` (個人アカウント) |
+| Repository access | **Only select repositories**｡secret を配るリポジトリを選ぶ |
+| Contents | Read and write |
+| Pull requests | Read and write |
+| Metadata | Read-only (自動で付く) |
+
+Workflows の権限は付けない｡そのため `.github/workflows/` を書き換える push はできない｡
+配るリポジトリを settings に足したら､PAT の Repository access にも足す｡
+
 `GH_MANAGE_TOKEN` と下の `WORKBENCH_TOKEN` は gh-manage が値を配らないので､`settings/repos/gh-manage.yaml` の
 `data.secrets` に並べてある (plan に未宣言の notice が出ず､消えていれば plan がエラーになる)｡
+`GH_AUTOMATION_TOKEN` も gh-manage 自身へは配らないので､同じく `data.secrets` に並べてある｡
 
 配布する secret の名前を settings に足したら､同じ名前で gh-manage の Actions secret にも値を置く｡
 workflow は secret を同名の環境変数として gh-manage に渡す｡

@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=../schema.json
 # private｡ruleset main は base に bypass_actors (admin) と copilot_code_review を足した形
+# GH_AUTOMATION_TOKEN は update-flake-lock の workflow が PR を作る PAT (private では Dependabot の nix が使えない)
 repository:
   description: 'Claude Code global configuration: skills, hooks, CLAUDE.md'
   visibility: private
@@ -34,3 +35,6 @@ rulesets:
             - context: ci-status-check
               integration_id: 15368
           strict_required_status_checks_policy: false
+secrets:
+  GH_AUTOMATION_TOKEN:
+    from_env: GH_AUTOMATION_TOKEN
