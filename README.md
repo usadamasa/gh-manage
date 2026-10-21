@@ -139,6 +139,7 @@ direnv allow
 ```
 
 ツールの版を上げるときは `task nix:update` で `flake.lock` を更新する。
+Dependabot も `flake.lock`・`go.mod`・workflow の action を週次で上げる (`.github/dependabot.yml`)。
 
 ### コマンド
 

@@ -33,6 +33,7 @@ task ci       # format + lint + test + build
 ```
 
 ツールは `flake.nix` の devShell で固定する。`.envrc` (nix-direnv の `use flake`) が PATH を通す。
+依存の更新は `.github/dependabot.yml` (gomod・github-actions・nix を週次)。
 
 ## コード規約
 
