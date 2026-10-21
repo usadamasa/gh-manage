@@ -12,6 +12,10 @@ workflows:
         - 'actions/checkout@v7.0.1'
         - 'determinatesystems/nix-installer-action@v23'
         - 'nicknovitski/nix-develop@v1.2.1'
+    '.github/workflows/vulncheck.yaml':
+        - 'actions/checkout@v7.0.1'
+        - 'determinatesystems/nix-installer-action@v23'
+        - 'nicknovitski/nix-develop@v1.2.1'
     '.github/workflows/workbench.yaml':
         - 'actions/checkout@v7.0.1'
 dependencies:

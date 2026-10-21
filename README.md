@@ -147,10 +147,16 @@ Dependabot も `flake.lock`・`go.mod`・workflow の action を週次で上げ�
 task build    # bin/gh-manage をビルド
 task test     # テスト
 task lint     # yamllint, golangci-lint, go-arch-lint, analyze-*, govulncheck, gosec
+task vulncheck         # govulncheck (symbol モード)。task lint が呼ぶ
+task vulncheck:module  # govulncheck (module モード)。合否には使わない
 task metrics  # analyze-modularity でパッケージメトリクス (Ca/Ce/A/I/D) を表示
 task format   # go mod tidy, goimports, go fmt
 task ci       # format + lint + test + build
 ```
+
+コードが変わらなくても新しく公開された脆弱性を拾うため、`.github/workflows/vulncheck.yaml` が
+`task vulncheck` を週次で回す。module モードは修正版の無い advisory (golang.org/x/crypto の GO-2026-5932) で
+常に落ちるので、同じ workflow で結果を job summary に出すだけにしている。
 
 ## なぜ自作か
 
