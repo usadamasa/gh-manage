@@ -1,4 +1,8 @@
 # yaml-language-server: $schema=../schema.json
 # repository は visibility だけ base と違う｡rulesets は base のまま
+# GH_AUTOMATION_TOKEN は update-flake-lock の workflow が PR を作る PAT (private では Dependabot の nix が使えない)
 repository:
   visibility: private
+secrets:
+  GH_AUTOMATION_TOKEN:
+    from_env: GH_AUTOMATION_TOKEN
