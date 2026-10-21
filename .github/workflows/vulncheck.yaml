@@ -1,0 +1,37 @@
+name: vulncheck
+
+# PR 時は ci.yaml の lint (task lint) が symbol モードを回す。こちらはコードが変わらなくても
+# 新しく公開された脆弱性を拾うための定期実行。secret は渡さない
+"on":
+  schedule:
+    - cron: "0 0 * * 1" # 毎週月曜 09:00 JST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vulncheck:
+    name: vulncheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: $/.github/actions/setup-nix
+
+      - name: Run govulncheck (symbol)
+        run: task vulncheck
+
+      # module モードは修正版の無い advisory (x/crypto の GO-2026-5932) で常に落ちるので、
+      # 失敗したステップとして run に残すだけで job は落とさない
+      - name: Run govulncheck (module, report only)
+        continue-on-error: true
+        # shell を明示すると pipefail が付き、tee ではなく govulncheck の exit code でステップが失敗する
+        shell: bash
+        run: task vulncheck:module 2>&1 | tee "$RUNNER_TEMP/vulncheck-module.txt"
+
+      - name: Write module results to the job summary
+        run: printf '## govulncheck -scan module\n\n```text\n%s\n```\n' "$(cat "$RUNNER_TEMP/vulncheck-module.txt")" >> "$GITHUB_STEP_SUMMARY"

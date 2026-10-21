@@ -32,8 +32,20 @@ tasks:
       - go-arch-lint check
       - analyze-arch-lint --strict .
       - analyze-modularity --strict .
-      - govulncheck ./...
+      - task: vulncheck
       - gosec -quiet ./...
+
+  vulncheck:
+    desc: govulncheck を symbol モードで実行 (lint と週次の vulncheck workflow が呼ぶ)
+    cmds:
+      - govulncheck ./...
+
+  vulncheck:module:
+    desc: govulncheck を module モードで実行 (週次の vulncheck workflow が表示だけに使う)
+    cmds:
+      # -scan module はルートに Go ファイルが無いと落ちるので、main パッケージのディレクトリで回す。
+      # x/crypto の GO-2026-5932 (openpgp、修正版なし) で常に exit 3 になるので合否には使わない
+      - govulncheck -C cmd/gh-manage -scan module
 
   metrics:
     desc: Print package metrics (Ca/Ce/A/I/D) as JSON
