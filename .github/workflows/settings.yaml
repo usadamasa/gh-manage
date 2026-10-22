@@ -40,7 +40,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: $/.github/actions/setup-nix
+      - uses: $/actions/setup-nix
 
       - name: Plan
         id: plan
@@ -97,7 +97,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: $/.github/actions/setup-nix
+      - uses: $/actions/setup-nix
 
       - name: Apply
         env:
@@ -136,7 +136,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: $/.github/actions/setup-nix
+      - uses: $/actions/setup-nix
 
       - name: Plan
         env:
