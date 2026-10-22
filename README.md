@@ -122,6 +122,11 @@ workflow は `.github/workflows/settings.yaml`｡secret の置き場所と job �
 別の workflow `.github/workflows/workbench.yaml` が､毎時 Workbench (Project 5) に未登録の issue / PR を追加する｡
 詳細は [docs/setup-token.md](docs/setup-token.md#workbench-への自動追加)｡
 
+## 共有の composite action
+
+管理下のリポジトリが共通で使う composite action は `actions/` に置く。
+一覧と呼び方は [actions/README.md](actions/README.md)。`.github/actions/` は gh-manage 自身だけが使う action の置き場。
+
 ## 開発
 
 ### 前提

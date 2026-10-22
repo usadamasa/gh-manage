@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - uses: $/.github/actions/setup-nix
+      - uses: $/actions/setup-nix
 
       - name: Run tests
         run: go test ./... -race -coverprofile=coverage.out
@@ -68,7 +68,7 @@ jobs:
           # analyze-modularity は揮発性を git の履歴から測る。shallow clone だと判定が効かない
           fetch-depth: 0
 
-      - uses: $/.github/actions/setup-nix
+      - uses: $/actions/setup-nix
 
       - name: Check formatting
         run: |
