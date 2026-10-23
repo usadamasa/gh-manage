@@ -1,0 +1,19 @@
+name: 'Verify actions lock'
+description: 'Install gh-actions-lock and verify that the workflows match actions.lock'
+
+# 他のリポジトリからも呼ばれる共有の action。呼び方は同じディレクトリの README.md
+runs:
+  using: 'composite'
+  steps:
+    # 拡張の版は lockfile の schema 版と連動する。上げるときは呼ぶ側の actions.lock も作り直す
+    - name: Install gh-actions-lock
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: gh extension install github/gh-actions-lock --pin v0.2.0
+
+    - name: Verify actions are locked
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: gh actions-lock --verify
