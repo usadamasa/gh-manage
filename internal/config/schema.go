@@ -243,6 +243,11 @@ func (s *Settings) validate() error {
 	if t := s.ManagedTopic; t != "" && !topicPattern.MatchString(t) {
 		errs = append(errs, fmt.Errorf("managed_topic: %q は topic として使えない (小文字の英数字と - で 50 文字まで)", t))
 	}
+	for _, t := range s.Topics {
+		if !topicPattern.MatchString(t) {
+			errs = append(errs, fmt.Errorf("topics: %q は topic として使えない (小文字の英数字と - で 50 文字まで)", t))
+		}
+	}
 	errs = append(errs, validateRepository(s.Repository)...)
 	errs = append(errs, validateVariables(s.Variables)...)
 	errs = append(errs, validateSecrets("secrets", s.Secrets)...)
