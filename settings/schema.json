@@ -14,7 +14,7 @@
     "repository": { "$ref": "#/definitions/repository" },
     "topics": {
       "type": ["array", "null"],
-      "items": { "type": "string" }
+      "items": { "$ref": "#/definitions/topic" }
     },
     "rulesets": {
       "description": "ruleset の名前から ruleset への map。",
