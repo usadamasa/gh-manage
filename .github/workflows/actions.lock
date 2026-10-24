@@ -8,14 +8,17 @@ workflows:
         - 'actions/upload-artifact@v7.0.2'
         - 'determinatesystems/nix-installer-action@v23'
         - 'nicknovitski/nix-develop@v1.2.1'
+        - 'nix-community/cache-nix-action@v7.0.2'
     '.github/workflows/settings.yaml':
         - 'actions/checkout@v7.0.1'
         - 'determinatesystems/nix-installer-action@v23'
         - 'nicknovitski/nix-develop@v1.2.1'
+        - 'nix-community/cache-nix-action@v7.0.2'
     '.github/workflows/vulncheck.yaml':
         - 'actions/checkout@v7.0.1'
         - 'determinatesystems/nix-installer-action@v23'
         - 'nicknovitski/nix-develop@v1.2.1'
+        - 'nix-community/cache-nix-action@v7.0.2'
     '.github/workflows/workbench.yaml':
         - 'actions/checkout@v7.0.1'
 dependencies:
@@ -39,3 +42,8 @@ dependencies:
         commit: 'sha1-9be7cfb4b10451d3390a75dc18ad0465bed4932a'
         owner_id: 151337
         repo_id: 706956179
+    'nix-community/cache-nix-action@v7.0.2':
+        ref: 'v7.0.2'
+        commit: 'sha1-7df957e333c1e5da7721f60227dbba6d06080569'
+        owner_id: 33221035
+        repo_id: 660071037
