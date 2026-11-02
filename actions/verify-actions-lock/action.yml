@@ -5,8 +5,6 @@ description: 'Install gh-actions-lock and verify that the workflows match action
 runs:
   using: 'composite'
   steps:
-    # 版を上げると schema が同じでも verify の判定が変わり、呼ぶ側の actions.lock が落ちうる。
-    # 上げる前に呼ぶ側で gh actions-lock --verify を流し、落ちたら --relock する
     - name: Install gh-actions-lock
       shell: bash
       env:
