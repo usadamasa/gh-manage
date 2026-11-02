@@ -2,8 +2,8 @@
 
 [gh-actions-lock](https://github.com/github/gh-actions-lock) を入れ、`gh actions-lock --verify` で
 ワークフローの `uses:` が `.github/workflows/actions.lock` と一致するかを検証する。
-拡張の版はこの action が固定する。版を上げると lockfile の schema 版が変わることがあるので、
-呼ぶ側では `gh actions-lock` で `actions.lock` を作り直す。
+拡張の版はこの action が固定する。版を上げると、schema 版が同じでも verify の判定が変わることがある。
+呼ぶ側の `actions.lock` が落ちたら、`gh actions-lock --relock` で記録し直す。
 
 ## 使い方
 
