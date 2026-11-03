@@ -1,5 +1,7 @@
 # yaml-language-server: $schema=../schema.json
 # repository は visibility だけ base と違う｡has_projects と allow_auto_merge は base に合わせる (bootstrap の drift 修正)
+# visibility は private のまま｡git の履歴に public にできない fixture が残り､refs/pull/1/head から辿れるので
+# ブランチの履歴を書き直しても消えない (refs/pull は自分で消せず GitHub Support への依頼が要る)｡public にするなら新しいリポジトリへ作り直す
 # rulesets は base のまま｡ruleset main の include: [] (何も守っていない) は base の ~DEFAULT_BRANCH に直す
 # GH_AUTOMATION_TOKEN は update-flake-lock の workflow が PR を作る PAT (private では Dependabot の nix が使えない)
 repository:
