@@ -19,11 +19,11 @@ labels:
     color: "ededed"
   # 機能の領域
   "area: cli":
-    color: "C5DEF5"
+    color: "1d76db"
     description: "cmd/acm, cmd/acm-login と internal/dl (パーサー)"
   "area: plugin":
-    color: "D4C5F9"
+    color: "1d76db"
     description: "plugins/ 配下のスキル・エージェント (プラグイン利用者向け)"
   "area: transport":
-    color: "BFD4F2"
+    color: "1d76db"
     description: "Chrome/CDP, Cookie, Cloudflare, HTTP 経路"
