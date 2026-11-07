@@ -52,6 +52,7 @@ func (c *Client) FetchSettings(ctx context.Context, owner, name string) (*config
 			s.DependabotSecrets, err = c.readSecretNames(ctx, prefix+"/dependabot/secrets")
 			return err
 		},
+		func() error { return c.readLabels(ctx, prefix, s) },
 	}
 	for _, step := range steps {
 		if err := step(); err != nil {
@@ -118,6 +119,27 @@ func (c *Client) readVariables(ctx context.Context, prefix string, s *config.Set
 		}
 		return nil
 	})
+}
+
+func (c *Client) readLabels(ctx context.Context, prefix string, s *config.Settings) error {
+	list, err := getList[labelEntry](ctx, c, prefix+"/labels?per_page=100")
+	if err != nil {
+		return err
+	}
+	for _, l := range list {
+		if s.Labels == nil {
+			s.Labels = map[string]config.Label{}
+		}
+		s.Labels[l.Name] = config.Label{Color: l.Color, Description: l.Description}
+	}
+	return nil
+}
+
+// labelEntry is an entry of GET /repos/{owner}/{repo}/labels. description は null で返ることがある｡
+type labelEntry struct {
+	Name        string `json:"name"`
+	Color       string `json:"color"`
+	Description string `json:"description"`
 }
 
 func (c *Client) readSecretNames(ctx context.Context, path string) (config.Secrets, error) {

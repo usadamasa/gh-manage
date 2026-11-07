@@ -47,6 +47,7 @@ func execApply(t *testing.T, files map[string]string, stdin string, args ...stri
 	writeFiles(t, dir, files)
 	api := &recordingAPI{get: newFakeAPI()}
 	api.get.addRepo("p", `{"visibility":"private","has_wiki":false}`)
+	api.get["repos/o/p/labels?per_page=100"] = `[{"name":"bug","color":"d73a4a","description":"Something isn't working"}]`
 	api.get["user/repos?affiliation=owner&per_page=100"] = `[{"name":"a"},{"name":"p"},{"name":"old","archived":true}]`
 	root := newRootCmdWith("test", func() (*github.Client, error) {
 		return github.New(github.Options{Token: "t", Transport: api})
@@ -175,6 +176,18 @@ func TestApplyCmd(t *testing.T) {
 			},
 			args:    []string{"--yes"},
 			wantErr: "data secret GONE",
+		},
+		{
+			name: "label を名前で upsert し､prune.labels なら宣言していない label を消す",
+			files: map[string]string{
+				"base.yaml":    "prune:\n  labels: true\n",
+				"repos/p.yaml": "labels:\n  new:\n    color: \"000000\"\n",
+			},
+			args: []string{"--yes"},
+			wantCalls: []string{
+				`POST repos/o/p/labels {"color":"000000","description":"","name":"new"}`,
+				"DELETE repos/o/p/labels/bug",
+			},
 		},
 		{
 			name: "private → public は --allow-publish が無ければ 1 件も書かない",

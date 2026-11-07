@@ -1,0 +1,15 @@
+labels:
+  bug:
+    color: "d73a4a"
+    description: Something isn't working
+  documentation:
+    color: "0075ca"
+    description: Docs
+  "priority: high":
+    color: "b60205"
+    description: "優先度: 高"
+  kept:
+    color: "ededed"
+  wontfix:
+    color: "ffffff"
+    description: This will not be worked on

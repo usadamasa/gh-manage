@@ -1,3 +1,88 @@
 # yaml-language-server: $schema=../schema.json
 # repository と rulesets は base のまま｡has_projects は base に合わせて off にする (bootstrap の drift 修正)
-{}
+labels:
+  # GitHub の既定ラベル
+  bug:
+    color: "d73a4a"
+    description: "Something isn't working"
+  documentation:
+    color: "0075ca"
+    description: "Improvements or additions to documentation"
+  duplicate:
+    color: "cfd3d7"
+    description: "This issue or pull request already exists"
+  enhancement:
+    color: "a2eeef"
+    description: "New feature or request"
+  wontfix:
+    color: "ffffff"
+    description: "This will not be worked on"
+  # tagpr と Dependabot が付ける
+  tagpr:
+    color: "ededed"
+  dependencies:
+    color: "0366d6"
+    description: "Pull requests that update a dependency file"
+  github_actions:
+    color: "000000"
+    description: "Pull requests that update GitHub Actions code"
+  nix:
+    color: "3E6399"
+    description: "Pull requests that update nix code"
+  # 種類
+  refactor:
+    color: "c5def5"
+    description: "振る舞いを変えない内部構造の整理"
+  investigation:
+    color: "d4c5f9"
+    description: "検討・triage・前提の裏取り"
+  epic:
+    color: "3e4b9e"
+    description: "sub-issue を束ねる親 issue"
+  # 優先度
+  "priority: high":
+    color: "b60205"
+    description: "優先度: 高"
+  "priority: medium":
+    color: "d93f0b"
+    description: "優先度: 中"
+  "priority: low":
+    color: "fbca04"
+    description: "優先度: 低"
+  # 機能の領域
+  "area: rate-limit":
+    color: "1d76db"
+    description: "利用上限の検知と解除後の再開 (monitor、detect、simulate)"
+  "area: statusline":
+    color: "1d76db"
+    description: "statusline と state file への集約"
+  "area: dream":
+    color: "1d76db"
+    description: "記憶階層の consolidation (dream)"
+  "area: deps-graph":
+    color: "1d76db"
+    description: "依存図と agent-tasks アプリ、タスクの記録、辺"
+  "area: parking":
+    color: "1d76db"
+    description: "パーキングロット (メモの置き場と受け渡し)"
+  "area: handoff":
+    color: "1d76db"
+    description: "peer セッションへの送達 (tell、spawn、peer-sessions)"
+  "area: rex":
+    color: "1d76db"
+    description: "rex の backend と rex の前提への追従"
+  "area: housekeeping":
+    color: "1d76db"
+    description: "worktree の回収と保持期間での掃除"
+  "area: lifecycle":
+    color: "1d76db"
+    description: "バイナリの用意と更新、daemon の起動、doctor、setup、CLI 共通"
+  "area: mod":
+    color: "1d76db"
+    description: "Claude Code の mod (tool、通知、pane)"
+  "area: coordination":
+    color: "1d76db"
+    description: "セッション同士の気づき合い、予約と排他、仕事の配分"
+  "area: dev":
+    color: "1d76db"
+    description: "CI、lint、テスト、パッケージ構成、保守用の skill と docs"

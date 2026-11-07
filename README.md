@@ -10,6 +10,7 @@ Terraform のような state ファイルは持たず､毎回 GitHub API から
 | 一般設定 | delete_branch_on_merge､wiki / projects / issues の有効・無効､merge 方式､visibility､description､topics |
 | ruleset | default branch の保護 (削除・force push の禁止､PR 必須､required status checks) |
 | variables / secrets | Actions の variable と secret､Dependabot の secret を指定したリポジトリへ配布 |
+| labels | issue / PR の label (color と description)｡`labels` を書いたリポジトリだけを比べる |
 | リポジトリ作成 | 宣言があって GitHub に無いリポジトリを作る |
 
 削除と archive は行わない｡
@@ -46,6 +47,7 @@ prune:                      # 宣言していないリソースを消すか｡�
   variables: false
   secrets: false
   dependabot_secrets: false
+  labels: false
 managed_topic: gh-managed   # 管理下のリポジトリに必ず付ける topic｡GitHub 側で管理対象を見分けるための印
 repository:                 # PATCH /repos/{owner}/{repo} のフィールドをそのまま書く
   visibility: public
@@ -74,6 +76,12 @@ secrets:                    # 値は環境変数から読む｡受け付ける�
 dependabot_secrets:         # Dependabot の secret｡書き方は secrets と同じ
   NPM_TOKEN:
     from_env: NPM_TOKEN
+labels:                     # キーが label の名前｡名前で upsert する
+  bug:
+    color: "d73a4a"         # # を付けない 6 桁の 16 進｡数字だけの色が整数に読まれないよう引用符で囲む
+    description: "Something isn't working"
+  "priority: high":         # : を含む名前は引用符で囲む
+    color: "b60205"
 ```
 
 ```yaml
@@ -81,7 +89,7 @@ dependabot_secrets:         # Dependabot の secret｡書き方は secrets と�
 repository:
   visibility: private
 data:                       # 管理しないが存在を前提にするもの (Terraform の data source)
-  secrets: [DEPLOY_TOKEN]   # 作らず消さず､live に無ければ plan がエラー｡種類は prune と同じ 4 つ
+  secrets: [DEPLOY_TOKEN]   # 作らず消さず､live に無ければ plan がエラー｡種類は prune と同じ 5 つ
 ```
 
 ## インストール

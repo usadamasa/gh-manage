@@ -34,6 +34,7 @@ const prunedDefaults = `prune:
   variables: false
   secrets: false
   dependabot_secrets: false
+  labels: false
 `
 
 func TestRenderCmd(t *testing.T) {

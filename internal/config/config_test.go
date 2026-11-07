@@ -335,6 +335,7 @@ func TestEncode(t *testing.T) {
   variables: false
   secrets: true
   dependabot_secrets: false
+  labels: false
 repository:
   visibility: public
   has_wiki: false

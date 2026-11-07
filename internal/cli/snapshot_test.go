@@ -45,6 +45,7 @@ func (f fakeAPI) addRepo(name, repoJSON string) {
 	f[p+"/actions/variables?per_page=30"] = `{"variables":[]}`
 	f[p+"/actions/secrets?per_page=100"] = `{"secrets":[{"name":"TOKEN"}]}`
 	f[p+"/dependabot/secrets?per_page=100"] = `{"secrets":[]}`
+	f[p+"/labels?per_page=100"] = `[]`
 	f[p+"/actions/secrets/public-key"] = testPublicKey
 	f[p+"/dependabot/secrets/public-key"] = testPublicKey
 }

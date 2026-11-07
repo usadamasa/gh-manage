@@ -94,12 +94,14 @@ func TestCheckData(t *testing.T) {
 		Variables:         []string{"V"},
 		Secrets:           []string{"S"},
 		DependabotSecrets: []string{"D"},
+		Labels:            []string{"L"},
 	}
 	all := &config.Settings{
 		Rulesets:          map[string]config.Ruleset{"legacy": {}},
 		Variables:         config.Variables{"V": {Value: "x"}},
 		Secrets:           config.Secrets{"S": {}},
 		DependabotSecrets: config.Secrets{"D": {}},
+		Labels:            map[string]config.Label{"L": {}},
 	}
 	tests := []struct {
 		name    string
@@ -112,14 +114,16 @@ func TestCheckData(t *testing.T) {
 			live: &config.Settings{Variables: all.Variables},
 			wantErr: "r: data ruleset legacy が live に無い\n" +
 				"r: data secret S が live に無い\n" +
-				"r: data dependabot_secret D が live に無い",
+				"r: data dependabot_secret D が live に無い\n" +
+				"r: data label L が live に無い",
 		},
 		{
 			name: "リポジトリが無ければ全部無い",
 			wantErr: "r: data ruleset legacy が live に無い\n" +
 				"r: data variable V が live に無い\n" +
 				"r: data secret S が live に無い\n" +
-				"r: data dependabot_secret D が live に無い",
+				"r: data dependabot_secret D が live に無い\n" +
+				"r: data label L が live に無い",
 		},
 	}
 	for _, tt := range tests {

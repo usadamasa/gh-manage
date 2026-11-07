@@ -75,6 +75,25 @@ func TestWrites(t *testing.T) {
 			want: []string{`DELETE repos/o/r/actions/variables/GO`},
 		},
 		{
+			name: "UpsertLabel は既存なら名前の URL に PATCH",
+			do: func(c *Client) error {
+				return c.UpsertLabel(context.Background(), "o", "r", "priority: high", config.Label{Color: "b60205", Description: "高"})
+			},
+			want: []string{`PATCH repos/o/r/labels/priority: high {"color":"b60205","description":"高"}`},
+		},
+		{
+			name: "UpsertLabel は無ければ POST",
+			do: func(c *Client) error {
+				return c.UpsertLabel(context.Background(), "o", "r", "new", config.Label{Color: "000000"})
+			},
+			want: []string{`POST repos/o/r/labels {"color":"000000","description":"","name":"new"}`},
+		},
+		{
+			name: "DeleteLabel は名前の URL に DELETE",
+			do:   func(c *Client) error { return c.DeleteLabel(context.Background(), "o", "r", "priority: high") },
+			want: []string{`DELETE repos/o/r/labels/priority: high`},
+		},
+		{
 			name: "DeleteSecret は actions の secret を DELETE",
 			do:   func(c *Client) error { return c.DeleteSecret(context.Background(), "o", "r", SecretsActions, "TOKEN") },
 			want: []string{`DELETE repos/o/r/actions/secrets/TOKEN`},
@@ -100,6 +119,10 @@ func TestWrites(t *testing.T) {
 				"DELETE repos/o/r/actions/variables/GO":   {status: http.StatusNoContent},
 				"DELETE repos/o/r/actions/secrets/TOKEN":  {status: http.StatusNoContent},
 				"DELETE repos/o/r/dependabot/secrets/NPM": {status: http.StatusNoContent},
+				"GET repos/o/r/labels?per_page=100":       {body: `[{"name":"priority: high","color":"fbca04"}]`},
+				"PATCH repos/o/r/labels/priority: high":   {body: `{}`},
+				"POST repos/o/r/labels":                   {status: http.StatusCreated, body: `{}`},
+				"DELETE repos/o/r/labels/priority: high":  {status: http.StatusNoContent},
 			})
 			if err := tt.do(c); err != nil {
 				t.Fatalf("error = %v", err)
@@ -108,6 +131,17 @@ func TestWrites(t *testing.T) {
 				t.Errorf("calls =\n%q\nwant\n%q", ft.calls, tt.want)
 			}
 		})
+	}
+}
+
+// TestLabelPath_Escaped checks that a label name with a space, a colon or a slash stays one path segment.
+func TestLabelPath_Escaped(t *testing.T) {
+	c, ft := newTestClient(t, map[string]fakeResponse{"DELETE repos/o/r/labels/area: a/b": {status: http.StatusNoContent}})
+	if err := c.DeleteLabel(context.Background(), "o", "r", "area: a/b"); err != nil {
+		t.Fatalf("DeleteLabel() error = %v", err)
+	}
+	if got, want := ft.requests[0].URL.EscapedPath(), "/repos/o/r/labels/area:%20a%2Fb"; got != want {
+		t.Errorf("path = %q, want %q", got, want)
 	}
 }
 

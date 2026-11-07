@@ -41,6 +41,8 @@ func (f *fakeGitHub) run(t *testing.T, acts []Action) {
 		case ActDeleteRuleset:
 			f.calls = append(f.calls, "delete ruleset "+a.Name)
 			delete(f.live.Rulesets, a.Name)
+		case ActUpsertLabel, ActDeleteLabel:
+			f.runLabel(a)
 		default:
 			f.runValue(a)
 		}
@@ -72,6 +74,19 @@ func (f *fakeGitHub) runValue(a Action) {
 	}
 }
 
+func (f *fakeGitHub) runLabel(a Action) {
+	if a.Op == ActDeleteLabel {
+		f.calls = append(f.calls, "delete label "+a.Name)
+		delete(f.live.Labels, a.Name)
+		return
+	}
+	f.calls = append(f.calls, "upsert label "+a.Name+" "+a.Label.Color+" "+a.Label.Description)
+	if f.live.Labels == nil {
+		f.live.Labels = map[string]config.Label{}
+	}
+	f.live.Labels[a.Name] = a.Label
+}
+
 func (f *fakeGitHub) secrets(kind string) *config.Secrets {
 	if kind == KindDependabotSecret {
 		return &f.live.DependabotSecrets
@@ -92,7 +107,7 @@ func actions(t *testing.T, p RepoPlan, desired *config.Settings) []Action {
 func TestApply_Converges(t *testing.T) {
 	cases := []string{
 		"repository", "rulesets", "prune", "topics", "create_repo", "no_change", "values",
-		"managed_topic", "managed_topic_declared", "create_managed",
+		"managed_topic", "managed_topic_declared", "create_managed", "labels", "labels_prune", "labels_undeclared",
 	}
 	for _, name := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -243,6 +258,45 @@ func TestActions_Values(t *testing.T) {
 				"put secret B from ENV_B",
 				"put dependabot_secret DEP from ENV_DEP",
 			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &fakeGitHub{live: tt.live}
+			w.run(t, actions(t, Plan("r", desired, tt.live), desired))
+			if !reflect.DeepEqual(w.calls, tt.want) {
+				t.Errorf("calls =\n%q\nwant\n%q", w.calls, tt.want)
+			}
+		})
+	}
+}
+
+func TestActions_Labels(t *testing.T) {
+	desired := &config.Settings{
+		Prune: config.Prune{Labels: true},
+		Labels: map[string]config.Label{
+			"bug":            {Color: "d73a4a", Description: "Something isn't working"},
+			"priority: high": {Color: "b60205", Description: "高"},
+		},
+	}
+	tests := []struct {
+		name string
+		live *config.Settings
+		want []string
+	}{
+		{
+			name: "color と description の両方が違っても名前ごとに 1 回で宣言全体を書く",
+			live: &config.Settings{Labels: map[string]config.Label{
+				"bug":            {Color: "000000", Description: "old"},
+				"priority: high": {Color: "B60205", Description: "高"},
+				"wontfix":        {Color: "ffffff"},
+			}},
+			want: []string{"upsert label bug d73a4a Something isn't working", "delete label wontfix"},
+		},
+		{
+			name: "新規リポジトリには宣言したラベルを全部入れる",
+			live: nil,
+			want: []string{"create", "upsert label bug d73a4a Something isn't working", "upsert label priority: high b60205 高"},
 		},
 	}
 	for _, tt := range tests {

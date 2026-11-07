@@ -65,6 +65,7 @@ func Plan(repo string, desired, live *config.Settings) RepoPlan {
 	p.planVariables(desired, live)
 	p.planSecrets(KindSecret, "secrets", desired.Secrets, live.Secrets, desired.Data.Secrets, desired.Prune.Secrets)
 	p.planSecrets(KindDependabotSecret, "dependabot_secrets", desired.DependabotSecrets, live.DependabotSecrets, desired.Data.DependabotSecrets, desired.Prune.DependabotSecrets)
+	p.planLabels(desired, live)
 	return *p
 }
 
@@ -78,6 +79,7 @@ func CheckData(repo string, desired, live *config.Settings) error {
 	errs = append(errs, missingData(repo, "variable", desired.Data.Variables, live.Variables)...)
 	errs = append(errs, missingData(repo, KindSecret, desired.Data.Secrets, live.Secrets)...)
 	errs = append(errs, missingData(repo, KindDependabotSecret, desired.Data.DependabotSecrets, live.DependabotSecrets)...)
+	errs = append(errs, missingData(repo, KindLabel, desired.Data.Labels, live.Labels)...)
 	return errors.Join(errs...)
 }
 
@@ -215,6 +217,33 @@ func (p *RepoPlan) planSecrets(kind, section string, desired, live config.Secret
 	for _, name := range sortedKeys(live) {
 		if _, ok := desired[name]; !ok && !slices.Contains(data, name) {
 			p.undeclared(kind, section, name, prune)
+		}
+	}
+}
+
+// planLabels compares color (大文字小文字を問わない) and description by name.
+// labels を宣言していなければ比べない｡どのリポジトリにもある既定ラベルを notice に出さないため｡
+func (p *RepoPlan) planLabels(desired, live *config.Settings) {
+	if desired.Labels == nil {
+		return
+	}
+	for _, name := range sortedKeys(desired.Labels) {
+		d := desired.Labels[name]
+		l, ok := live.Labels[name]
+		if !ok {
+			p.add(Change{Op: OpCreate, Kind: KindLabel, Name: name})
+			continue
+		}
+		if !strings.EqualFold(d.Color, l.Color) {
+			p.add(Change{Op: OpUpdate, Kind: KindLabel, Name: name, Key: "color", Old: l.Color, New: d.Color})
+		}
+		if d.Description != l.Description {
+			p.add(Change{Op: OpUpdate, Kind: KindLabel, Name: name, Key: "description", Old: l.Description, New: d.Description})
+		}
+	}
+	for _, name := range sortedKeys(live.Labels) {
+		if _, ok := desired.Labels[name]; !ok && !slices.Contains(desired.Data.Labels, name) {
+			p.undeclared(KindLabel, "labels", name, desired.Prune.Labels)
 		}
 	}
 }

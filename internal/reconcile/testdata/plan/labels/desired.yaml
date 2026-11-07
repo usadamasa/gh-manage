@@ -1,0 +1,14 @@
+data:
+  labels: [kept]
+labels:
+  bug:
+    color: "ff0000"
+    description: Something isn't working
+  documentation:
+    color: "0075ca"
+    description: Improvements or additions to documentation
+  new:
+    color: "000000"
+  "priority: high":
+    color: "B60205"
+    description: "優先度: 高"

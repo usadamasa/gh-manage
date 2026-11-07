@@ -154,7 +154,11 @@ func TestFetchSettings(t *testing.T) {
 			body: `{"total_count":1,"secrets":[{"name":"TAGPR_PRIVATE_KEY","created_at":"2026-01-01T00:00:00Z"}]}`,
 		},
 		"GET repos/o/r/dependabot/secrets?per_page=100": {
-			body:   `{"total_count":0,"secrets":[]}`,
+			body: `{"total_count":0,"secrets":[]}`,
+		},
+		"GET repos/o/r/labels?per_page=100": {
+			body: `[{"id":1,"name":"bug","color":"d73a4a","description":"Something isn't working","default":true},
+				{"id":2,"name":"tagpr","color":"ededed","description":null,"default":false}]`,
 			header: map[string]string{"X-RateLimit-Remaining": "4990"},
 		},
 	})
@@ -188,6 +192,10 @@ func TestFetchSettings(t *testing.T) {
 		},
 		Variables: config.Variables{"GO_VERSION": {Value: "1.25"}},
 		Secrets:   config.Secrets{"TAGPR_PRIVATE_KEY": {FromEnv: "TAGPR_PRIVATE_KEY"}},
+		Labels: map[string]config.Label{
+			"bug":   {Color: "d73a4a", Description: "Something isn't working"},
+			"tagpr": {Color: "ededed"},
+		},
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("FetchSettings() =\n%#v\nwant\n%#v", got, want)

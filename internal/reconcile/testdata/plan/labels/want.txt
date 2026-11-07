@@ -1,0 +1,5 @@
+labels:
+  ~ update label bug.color: "d73a4a" -> "ff0000"
+  ~ update label documentation.description: "Docs" -> "Improvements or additions to documentation"
+  + create label new
+  ! label wontfix は宣言されていない (prune.labels: false なので残す)

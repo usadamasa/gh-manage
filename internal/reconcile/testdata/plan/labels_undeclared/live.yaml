@@ -1,0 +1,6 @@
+repository:
+  has_wiki: false
+labels:
+  bug:
+    color: "d73a4a"
+    description: Something isn't working
