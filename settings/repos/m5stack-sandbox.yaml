@@ -1,3 +1,20 @@
 # yaml-language-server: $schema=../schema.json
 # repository と rulesets は base のまま｡required_status_checks の integration_id は base に合わせて付ける (bootstrap の drift 修正)
-{}
+labels:
+  # Dependabot が付ける
+  dependencies:
+    color: "0366d6"
+    description: "Pull requests that update a dependency file"
+  nix:
+    color: "3E6399"
+    description: "Pull requests that update nix code"
+  python:
+    color: "2b67c6"
+    description: "Pull requests that update python code"
+  "python:uv":
+    color: "2b67c6"
+    description: "Pull requests that update python:uv code"
+  # issue の状態
+  question:
+    color: "d876e3"
+    description: "Further information is requested"

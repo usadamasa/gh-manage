@@ -1,3 +1,19 @@
 # yaml-language-server: $schema=../schema.json
 # repository と rulesets は base のまま｡ruleset の allowed_merge_methods と do_not_enforce_on_create は base に合わせる (bootstrap の drift 修正)
-{}
+labels:
+  # tagpr と Dependabot が付ける
+  tagpr:
+    color: "ededed"
+  "tagpr:minor":
+    color: "ededed"
+  "tagpr:major":
+    color: "ededed"
+  dependencies:
+    color: "0366d6"
+    description: "Pull requests that update a dependency file"
+  github_actions:
+    color: "000000"
+    description: "Pull requests that update GitHub Actions code"
+  nix:
+    color: "3E6399"
+    description: "Pull requests that update nix code"

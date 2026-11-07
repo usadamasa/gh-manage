@@ -6,3 +6,129 @@ repository:
 secrets:
   GH_AUTOMATION_TOKEN:
     from_env: GH_AUTOMATION_TOKEN
+labels:
+  # tagpr と Dependabot が付ける
+  tagpr:
+    color: "ededed"
+  "tagpr:minor":
+    color: "ededed"
+  "tagpr:major":
+    color: "ededed"
+  dependencies:
+    color: "0366d6"
+    description: "Pull requests that update a dependency file"
+  github_actions:
+    color: "000000"
+    description: "Pull requests that update GitHub Actions code"
+  go:
+    color: "16e2e2"
+    description: "Pull requests that update go code"
+  # gh-aw の workflow が付ける
+  report:
+    color: "ededed"
+  agentic-workflows:
+    color: "ededed"
+  # repo 独自の分類
+  "track-a:ai-evolution":
+    color: "5319E7"
+    description: "Track A: AI Team Evolution基盤 (中長期)"
+  "track-b:mcp-review":
+    color: "0E8A16"
+    description: "Track B: MCPレビューツール進化 (短期)"
+  review-agent:
+    color: "FBCA04"
+    description: "レビューエージェント機能全般"
+  data-model:
+    color: "C5DEF5"
+    description: "データモデル/スキーマ関連"
+  voc:
+    color: "D4C5F9"
+    description: "Voice of Customer entry"
+  idea:
+    color: "c2e0c6"
+    description: "検討段階のアイデア (旧 backlog の idea)"
+  task:
+    color: "1d76db"
+    description: "着手予定の作業 (旧 backlog の task)"
+  # 旧 backlog のタグ
+  api-expansion:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  discovery:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  search:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  mcp-surface:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  graphql:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  resource:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  quality-eval:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  openapi:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  integration-api:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  efficiency:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  book-search:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  api-contract:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  topics:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  testing:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  recommendation:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  observability:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  live-events:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  learning-plan:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  integration:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  history:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  design:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  cross-content:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  cookie:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  behavioral:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  annotations:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  analytics:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"
+  agent:
+    color: "bfdadc"
+    description: "旧 backlog のタグ"

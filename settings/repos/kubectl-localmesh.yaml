@@ -2,3 +2,39 @@
 # repository は description だけ base と違う｡rulesets は base のまま (snapshot では rules の並び順だけ違った)
 repository:
   description: kubectl localmesh is a local-only pseudo service mesh built on kubectl port-forward.
+labels:
+  # tagpr が付ける
+  tagpr:
+    color: "ededed"
+  "tagpr:minor":
+    color: "ededed"
+  "tagpr:major":
+    color: "ededed"
+  minor:
+    color: "7caa2a"
+    description: "Label of minor update targets."
+  major:
+    color: "f04102"
+    description: "Label of major update targets."
+  breaking-change:
+    color: "f60901"
+  chore:
+    color: "7d17c8"
+  # Dependabot が付ける
+  dependencies:
+    color: "0366d6"
+    description: "Pull requests that update a dependency file"
+  github_actions:
+    color: "000000"
+    description: "Pull requests that update GitHub Actions code"
+  go:
+    color: "16e2e2"
+    description: "Pull requests that update go code"
+  nix:
+    color: "3E6399"
+    description: "Pull requests that update nix code"
+  # gh-aw の workflow が付ける
+  report:
+    color: "ededed"
+  agentic-workflows:
+    color: "ededed"

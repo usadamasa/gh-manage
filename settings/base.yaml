@@ -7,8 +7,7 @@ prune:
   variables: false
   secrets: false
   dependabot_secrets: false
-  # label を消すと issue / PR から外れるので消さない
-  labels: false
+  labels: true
 # 管理下のリポジトリに必ず付ける topic｡GitHub 側で管理対象を見分ける印で､plan が desired の topics に足す
 managed_topic: gh-managed
 repository:

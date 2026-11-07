@@ -9,3 +9,21 @@ repository:
 secrets:
   GH_AUTOMATION_TOKEN:
     from_env: GH_AUTOMATION_TOKEN
+labels:
+  # tagpr が付ける
+  tagpr:
+    color: "ededed"
+  "tagpr:minor":
+    color: "ededed"
+  "tagpr:major":
+    color: "ededed"
+  # 機能の領域
+  "area: cli":
+    color: "C5DEF5"
+    description: "cmd/acm, cmd/acm-login と internal/dl (パーサー)"
+  "area: plugin":
+    color: "D4C5F9"
+    description: "plugins/ 配下のスキル・エージェント (プラグイン利用者向け)"
+  "area: transport":
+    color: "BFD4F2"
+    description: "Chrome/CDP, Cookie, Cloudflare, HTTP 経路"
