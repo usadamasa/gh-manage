@@ -92,6 +92,12 @@ func TestMerge(t *testing.T) {
 			want:    "prune:\n  rulesets: true\n  secrets: true\n",
 		},
 		{
+			name:    "labels は名前をキーに merge し､repo は足す・上書きする・null で外す",
+			base:    "labels:\n  bug:\n    color: d73a4a\n    description: broken\n  epic:\n    color: 3e4b9e\n  wontfix:\n    color: ffffff\n",
+			overlay: "labels:\n  bug:\n    color: ff0000\n  wontfix: null\n  \"area: dev\":\n    color: 1d76db\n",
+			want:    "labels:\n  bug:\n    color: ff0000\n    description: broken\n  epic:\n    color: 3e4b9e\n  \"area: dev\":\n    color: 1d76db\n",
+		},
+		{
 			name:    "scalar を map で置き換える",
 			base:    "a: x\n",
 			overlay: "a:\n  b: 1\n",

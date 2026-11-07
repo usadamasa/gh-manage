@@ -1,22 +1,6 @@
 # yaml-language-server: $schema=../schema.json
 # repository と rulesets は base のまま｡has_projects は base に合わせて off にする (bootstrap の drift 修正)
 labels:
-  # GitHub の既定ラベル
-  bug:
-    color: "d73a4a"
-    description: "Something isn't working"
-  documentation:
-    color: "0075ca"
-    description: "Improvements or additions to documentation"
-  duplicate:
-    color: "cfd3d7"
-    description: "This issue or pull request already exists"
-  enhancement:
-    color: "a2eeef"
-    description: "New feature or request"
-  wontfix:
-    color: "ffffff"
-    description: "This will not be worked on"
   # tagpr と Dependabot が付ける
   tagpr:
     color: "ededed"
@@ -29,26 +13,6 @@ labels:
   nix:
     color: "3E6399"
     description: "Pull requests that update nix code"
-  # 種類
-  refactor:
-    color: "c5def5"
-    description: "振る舞いを変えない内部構造の整理"
-  investigation:
-    color: "d4c5f9"
-    description: "検討・triage・前提の裏取り"
-  epic:
-    color: "3e4b9e"
-    description: "sub-issue を束ねる親 issue"
-  # 優先度
-  "priority: high":
-    color: "b60205"
-    description: "優先度: 高"
-  "priority: medium":
-    color: "d93f0b"
-    description: "優先度: 中"
-  "priority: low":
-    color: "fbca04"
-    description: "優先度: 低"
   # 機能の領域
   "area: rate-limit":
     color: "1d76db"
