@@ -14,7 +14,6 @@ gh-manage は､自分 (usadamasa) が保有する GitHub リポジトリの設�
 │   ├── config/         # settings/ の定義どおりの読み込み (decodeStrict と validate)､base + overlay の合成､snapshot の差分
 │   ├── github/         # GitHub REST API クライアント (go-gh)
 │   ├── reconcile/      # desired と live の差分 (plan)
-│   ├── log/            # 標準出力への出力 (forbidigo 対応)
 │   └── version/        # バージョン解決
 ├── settings/           # 管理対象の宣言 (base.yaml + repos/<name>.yaml)｡step 3 の snapshot で作る
 ├── docs/               # セットアップ手順
@@ -39,8 +38,8 @@ task ci       # format + lint + test + build
 
 ## コード規約
 
-- 標準出力への出力は `internal/log` の `Logger` を使う (`log.Default.Printf` など｡`fmt.Print*` は forbidigo が止める)｡
-  例外は `cmd/`､`internal/cli/`､`internal/log/`､テスト
+- 標準出力へ書くのは `cmd/` と `internal/cli/` だけ｡他のパッケージは値を返し､`fmt.Print*` は forbidigo が止める
+  (テストは対象外)
 - GitHub API の呼び出しは `internal/github` に閉じる｡他のパッケージからの go-gh の import は depguard が止める
 - パッケージの依存方向は `.go-arch-lint.yml` で宣言する｡新しいパッケージを足したら component も足す
 - しきい値 (認知的複雑度 20､関数 100 行､nestif の複雑度 5､保守性指数 20) は `.golangci.yml`
