@@ -44,3 +44,31 @@ labels:
     color: "ededed"
   agentic-workflows:
     color: "ededed"
+  # 機能の領域
+  "area: guard":
+    color: "1d76db"
+    description: "PreToolUse と SessionStart の guard (guard-bash など) と cc-rm"
+  "area: settings":
+    color: "1d76db"
+    description: "settings の原本と生成、permissions・sandbox・autoMode、plugin の宣言と state の検査"
+  "area: skills":
+    color: "1d76db"
+    description: "グローバル skill と agent (ほかの area に属さないもの)"
+  "area: instructions":
+    color: "1d76db"
+    description: "グローバル CLAUDE.md と output style"
+  "area: toolchain":
+    color: "1d76db"
+    description: "開発ツールの導入と解決 (nix、home-manager、aqua、direnv、PATH、gh-actions-lock)"
+  "area: usage-analysis":
+    color: "1d76db"
+    description: "token・latency・permission の分析 (analyze-* と関連 skill)"
+  "area: capture":
+    color: "1d76db"
+    description: "画面の撮影と表示 (cleanshot-capture、showing-images-in-rex)"
+  "area: setup":
+    color: "1d76db"
+    description: "task setup/status/clean の symlink、shared/bin への配布、private marketplace"
+  "area: dev":
+    color: "1d76db"
+    description: "CI、lint、テスト、Taskfile、flake、Go workspace、保守用の docs"
