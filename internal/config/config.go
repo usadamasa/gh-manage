@@ -19,11 +19,6 @@ type Config struct {
 	managedTopic string
 }
 
-// ManagedTopic returns base.yaml's managed_topic, or "" when it is not set.
-func (c *Config) ManagedTopic() string {
-	return c.managedTopic
-}
-
 // Load reads <dir>/base.yaml and <dir>/repos/*.yaml.
 // A file under repos/ means the repository is managed. Each file is decoded
 // strictly into Settings so that a typo fails here, not at apply.

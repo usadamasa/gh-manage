@@ -154,8 +154,8 @@ func TestMinimize(t *testing.T) {
 				t.Fatalf("Render() error = %v", err)
 			}
 			// marker は render でなく plan が足すので､比較からは外す
-			normalize(live, cfg.ManagedTopic())
-			normalize(rendered, cfg.ManagedTopic())
+			normalize(live, cfg.managedTopic)
+			normalize(rendered, cfg.managedTopic)
 			if !reflect.DeepEqual(rendered, live) {
 				t.Errorf("Render(Minimize(live)) =\n%#v\nwant\n%#v", rendered, live)
 			}
