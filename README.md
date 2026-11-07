@@ -30,6 +30,7 @@ overlay は base に deep merge する｡
 - `null` を書くと base のキーを削除する (`secrets: {FOO: null}` で base の secret FOO を外す)
 - list は丸ごと置き換える｡ruleset の `rules` に 1 つ足すときも､overlay で list 全体を書き直す
 - list の要素の中の `null` は削除でなく値として残す (`code_coverage` の `minimum_coverage: null` など)
+- `labels` はラベル名をキーに merge する｡base のラベルは全リポジトリに入り､overlay は足す・color と description を上書きする・`null` で外す
 - `prune` も同じ規則で解決する｡既定は false で､base → overlay の順に上書きする
 - `managed_topic` の topic は plan が desired の topics に足す (`topics` を宣言していないリポジトリは live の topics に足す)｡
   `render` と snapshot の overlay には出ない
