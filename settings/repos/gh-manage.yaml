@@ -7,3 +7,20 @@ data:
     - GH_MANAGE_TOKEN
     - WORKBENCH_TOKEN
     - GH_AUTOMATION_TOKEN
+labels:
+  # 過去の issue に付いている
+  chore:
+    color: "ededed"
+  # Dependabot が付ける
+  dependencies:
+    color: "0366d6"
+    description: "Pull requests that update a dependency file"
+  github_actions:
+    color: "000000"
+    description: "Pull requests that update GitHub Actions code"
+  go:
+    color: "16e2e2"
+    description: "Pull requests that update go code"
+  nix:
+    color: "3E6399"
+    description: "Pull requests that update nix code"

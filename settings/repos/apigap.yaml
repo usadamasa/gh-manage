@@ -17,3 +17,14 @@ rulesets:
           required_approving_review_count: 0
           required_review_thread_resolution: false
           required_reviewers: []
+labels:
+  # Dependabot が付ける
+  dependencies:
+    color: "0366d6"
+    description: "Pull requests that update a dependency file"
+  github_actions:
+    color: "000000"
+    description: "Pull requests that update GitHub Actions code"
+  go:
+    color: "16e2e2"
+    description: "Pull requests that update go code"

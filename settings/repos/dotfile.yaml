@@ -2,3 +2,26 @@
 # ruleset は base のまま (required_status_checks の ci-status-check は dotfile#128 で入った PR 用 CI が出す)
 repository:
   description: dotfiles of vim,bash,and more...
+labels:
+  # Dependabot が付ける
+  dependencies:
+    color: "0366d6"
+    description: "Pull requests that update a dependency file"
+  github_actions:
+    color: "000000"
+    description: "Pull requests that update GitHub Actions code"
+  nix:
+    color: "3E6399"
+    description: "Pull requests that update nix code"
+  # gh-aw の workflow が付ける
+  report:
+    color: "ededed"
+  agentic-workflows:
+    color: "ededed"
+  # 設定の対象
+  zsh:
+    color: "8a9d35"
+  xdg:
+    color: "9d9165"
+  "claude code":
+    color: "4b03b2"

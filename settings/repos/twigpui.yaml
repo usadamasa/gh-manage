@@ -29,3 +29,46 @@ rulesets:
         parameters:
           max_coverage_drop: null
           minimum_coverage: null
+labels:
+  # Dependabot が付ける
+  dependencies:
+    color: "0366d6"
+    description: "Pull requests that update a dependency file"
+  github_actions:
+    color: "000000"
+    description: "Pull requests that update GitHub Actions code"
+  rust:
+    color: "000000"
+    description: "Pull requests that update rust code"
+  # issue の状態
+  question:
+    color: "d876e3"
+    description: "Further information is requested"
+  blocked:
+    color: "e4e669"
+    description: "Waiting on another issue"
+  # 機能の領域
+  "area: api":
+    color: "1d76db"
+    description: "X API client, quotas, rate limits"
+  "area: auth":
+    color: "1d76db"
+    description: "Authentication and OAuth"
+  "area: ui":
+    color: "5319e7"
+    description: "gpui window, layout, theming"
+  "area: cache":
+    color: "c2e0c6"
+    description: "Local cache and persistence"
+  "area: timeline":
+    color: "5319e7"
+    description: "Timeline fetching and rendering"
+  "area: config":
+    color: "c2e0c6"
+    description: "Configuration and file locations"
+  "area: cost":
+    color: "d4c5f9"
+    description: "API spend visibility and control"
+  "area: tui":
+    color: "5319e7"
+    description: "Terminal UI mode"

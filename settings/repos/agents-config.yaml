@@ -38,3 +38,9 @@ rulesets:
 secrets:
   GH_AUTOMATION_TOKEN:
     from_env: GH_AUTOMATION_TOKEN
+labels:
+  # gh-aw の workflow が付ける
+  report:
+    color: "ededed"
+  agentic-workflows:
+    color: "ededed"
