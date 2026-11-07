@@ -1,0 +1,4 @@
+prune:
+  labels: true
+repository:
+  has_wiki: false

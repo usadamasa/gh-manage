@@ -1,0 +1,6 @@
+prune:
+  labels: true
+labels:
+  bug:
+    color: "d73a4a"
+    description: Something isn't working

@@ -192,6 +192,10 @@ func (x executor) execute(ctx context.Context, repo string, a reconcile.Action) 
 		return c.PutSecret(ctx, owner, repo, secretStores[a.Kind], a.Name, x.secrets[a.Secret.FromEnv])
 	case reconcile.ActDeleteSecret:
 		return c.DeleteSecret(ctx, owner, repo, secretStores[a.Kind], a.Name)
+	case reconcile.ActUpsertLabel:
+		return c.UpsertLabel(ctx, owner, repo, a.Name, a.Label)
+	case reconcile.ActDeleteLabel:
+		return c.DeleteLabel(ctx, owner, repo, a.Name)
 	default:
 		return fmt.Errorf("unknown action %q", a.Op)
 	}

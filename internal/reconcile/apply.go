@@ -24,12 +24,15 @@ const (
 	ActDeleteVariable   ActionOp = "delete_variable"
 	ActPutSecret        ActionOp = "put_secret"
 	ActDeleteSecret     ActionOp = "delete_secret"
+	ActUpsertLabel      ActionOp = "upsert_label"
+	ActDeleteLabel      ActionOp = "delete_label"
 )
 
-// Kinds of secrets, as they appear in Change.Kind and Action.Kind.
+// Kinds as they appear in Change.Kind (and Action.Kind for secrets).
 const (
 	KindSecret           = "secret"
 	KindDependabotSecret = "dependabot_secret" // #nosec G101 -- 種類の名前で､資格情報ではない
+	KindLabel            = "label"
 )
 
 // Action is one write to GitHub. 使うフィールドは Op で決まる｡
@@ -39,8 +42,9 @@ type Action struct {
 	Repository config.Repository // ActCreateRepository
 	Fields     map[string]any    // ActUpdateRepository
 	Topics     []string          // ActSetTopics
-	Name       string            // ruleset, variable and secret actions
+	Name       string            // ruleset, variable, secret and label actions
 	Ruleset    config.Ruleset    // ActUpsertRuleset
+	Label      config.Label      // ActUpsertLabel
 	Value      string            // ActCreateVariable / ActUpdateVariable
 	Kind       string            // ActPutSecret / ActDeleteSecret: KindSecret or KindDependabotSecret
 	Secret     config.Secret     // ActPutSecret
@@ -97,7 +101,25 @@ func Actions(p RepoPlan, desired *config.Settings) ([]Action, error) {
 	acts = append(acts, rulesetActions(desired, upserts, deletes)...)
 	acts = append(acts, variableActions(p.Changes, desired.Variables)...)
 	acts = append(acts, secretActions(KindSecret, p.Changes, desired.Secrets)...)
-	return append(acts, secretActions(KindDependabotSecret, p.Changes, desired.DependabotSecrets)...), nil
+	acts = append(acts, secretActions(KindDependabotSecret, p.Changes, desired.DependabotSecrets)...)
+	return append(acts, labelActions(p.Changes, desired.Labels)...), nil
+}
+
+// labelActions writes each changed label once with its whole declaration, and deletes the pruned ones.
+func labelActions(changes []Change, desired map[string]config.Label) []Action {
+	var acts []Action
+	var seen []string
+	for _, c := range changes {
+		switch {
+		case c.Kind != KindLabel:
+		case c.Op == OpDelete:
+			acts = append(acts, Action{Op: ActDeleteLabel, Name: c.Name})
+		case !slices.Contains(seen, c.Name):
+			seen = append(seen, c.Name)
+			acts = append(acts, Action{Op: ActUpsertLabel, Name: c.Name, Label: desired[c.Name]})
+		}
+	}
+	return acts
 }
 
 // createActions makes the repository and then writes every declared setting.
@@ -118,7 +140,12 @@ func createActions(desired *config.Settings) ([]Action, error) {
 		acts = append(acts, Action{Op: ActCreateVariable, Name: name, Value: desired.Variables[name].Value})
 	}
 	acts = append(acts, secretActions(KindSecret, nil, desired.Secrets)...)
-	return append(acts, secretActions(KindDependabotSecret, nil, desired.DependabotSecrets)...), nil
+	acts = append(acts, secretActions(KindDependabotSecret, nil, desired.DependabotSecrets)...)
+	// auto_init で既定ラベルが付くので､同名があっても書けるよう upsert にする
+	for _, name := range sortedKeys(desired.Labels) {
+		acts = append(acts, Action{Op: ActUpsertLabel, Name: name, Label: desired.Labels[name]})
+	}
+	return acts, nil
 }
 
 func rulesetActions(desired *config.Settings, upserts, deletes []string) []Action {

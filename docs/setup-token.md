@@ -25,6 +25,7 @@ Repository permissions は次のとおり付ける｡
 | Secrets | Read and write | Actions の secret |
 | Variables | Read and write | Actions の variable |
 | Dependabot secrets | Read and write | Dependabot の secret |
+| Issues | Read and write | label (plan が全リポジトリの label を読む) |
 
 Generate token を押し､値を控える (再表示できない)｡
 

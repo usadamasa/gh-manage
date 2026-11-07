@@ -25,6 +25,8 @@ type Settings struct {
 	Variables         Variables          `yaml:"variables,omitempty"`
 	Secrets           Secrets            `yaml:"secrets,omitempty"`
 	DependabotSecrets Secrets            `yaml:"dependabot_secrets,omitempty"`
+	// Labels は nil (キーを書いていない) なら plan で比べない｡既定ラベルの notice を全リポジトリに出さないため｡
+	Labels map[string]Label `yaml:"labels,omitempty"`
 }
 
 // Prune decides, per kind, whether resources that are not declared are deleted. Default false.
@@ -33,6 +35,7 @@ type Prune struct {
 	Variables         bool `yaml:"variables"`
 	Secrets           bool `yaml:"secrets"`
 	DependabotSecrets bool `yaml:"dependabot_secrets"`
+	Labels            bool `yaml:"labels"`
 }
 
 // Data lists, per kind, resources that gh-manage does not manage but expects to exist.
@@ -42,6 +45,14 @@ type Data struct {
 	Variables         []string `yaml:"variables,omitempty"`
 	Secrets           []string `yaml:"secrets,omitempty"`
 	DependabotSecrets []string `yaml:"dependabot_secrets,omitempty"`
+	Labels            []string `yaml:"labels,omitempty"`
+}
+
+// Label is an issue label. The map key in Settings.Labels is its name.
+// description を省くと空とみなし､color と description は常に比べる｡
+type Label struct {
+	Color       string `yaml:"color" json:"color"`
+	Description string `yaml:"description,omitempty" json:"description"`
 }
 
 // Repository holds the fields of PATCH /repos/{owner}/{repo}.
@@ -232,6 +243,7 @@ var (
 	envNamePattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 	// topicPattern is GitHub's rule for topics: 小文字の英数字と - で､英数字で始まる 50 文字まで｡
 	topicPattern      = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,49}$`)
+	colorPattern      = regexp.MustCompile(`^[0-9A-Fa-f]{6}$`)
 	visibilities      = []string{"public", "private"}
 	rulesetTargets    = []string{"branch", "tag", "push"}
 	rulesetEnforcemts = []string{"active", "evaluate", "disabled"}
@@ -253,10 +265,12 @@ func (s *Settings) validate() error {
 	errs = append(errs, validateSecrets("secrets", s.Secrets)...)
 	errs = append(errs, validateSecrets("dependabot_secrets", s.DependabotSecrets)...)
 	errs = append(errs, validateRulesets(s.Rulesets)...)
-	errs = append(errs, validateData("rulesets", s.Data.Rulesets, hasKey(s.Rulesets), validateRulesetName)...)
+	errs = append(errs, validateLabels(s.Labels)...)
+	errs = append(errs, validateData("rulesets", s.Data.Rulesets, hasKey(s.Rulesets), validateNonEmptyName)...)
 	errs = append(errs, validateData("variables", s.Data.Variables, hasKey(s.Variables), validateActionsName)...)
 	errs = append(errs, validateData("secrets", s.Data.Secrets, hasKey(s.Secrets), validateActionsName)...)
 	errs = append(errs, validateData("dependabot_secrets", s.Data.DependabotSecrets, hasKey(s.DependabotSecrets), validateActionsName)...)
+	errs = append(errs, validateData("labels", s.Data.Labels, hasKey(s.Labels), validateNonEmptyName)...)
 	return errors.Join(errs...)
 }
 
@@ -285,7 +299,21 @@ func hasKey[V any](m map[string]V) func(string) bool {
 	}
 }
 
-func validateRulesetName(kind, name string) error {
+func validateLabels(labels map[string]Label) []error {
+	var errs []error
+	for _, name := range sortedKeys(labels) {
+		if name == "" {
+			errs = append(errs, errors.New("labels: 名前が空"))
+		}
+		if c := labels[name].Color; !colorPattern.MatchString(c) {
+			errs = append(errs, fmt.Errorf("labels.%s.color: %q は # を付けない 6 桁の 16 進にする", name, c))
+		}
+	}
+	return errs
+}
+
+// validateNonEmptyName rejects an empty name, the only rule on ruleset and label names.
+func validateNonEmptyName(kind, name string) error {
 	if name == "" {
 		return fmt.Errorf("%s: 名前が空", kind)
 	}

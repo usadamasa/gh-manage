@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"slices"
 
 	"github.com/usadamasa/gh-manage/internal/config"
 )
@@ -97,6 +99,29 @@ func (c *Client) rulesetIDs(ctx context.Context, prefix string) (map[string]int6
 		}
 	}
 	return ids, nil
+}
+
+// UpsertLabel updates the label called labelName, or creates it.
+func (c *Client) UpsertLabel(ctx context.Context, owner, repo, labelName string, l config.Label) error {
+	prefix := "repos/" + owner + "/" + repo + "/labels"
+	list, err := getList[labelEntry](ctx, c, prefix+"?per_page=100")
+	if err != nil {
+		return err
+	}
+	if slices.ContainsFunc(list, func(e labelEntry) bool { return e.Name == labelName }) {
+		return c.send(ctx, http.MethodPatch, labelPath(prefix, labelName), l)
+	}
+	return c.send(ctx, http.MethodPost, prefix, map[string]string{"name": labelName, "color": l.Color, "description": l.Description})
+}
+
+// DeleteLabel deletes the label called labelName.
+func (c *Client) DeleteLabel(ctx context.Context, owner, repo, labelName string) error {
+	return c.send(ctx, http.MethodDelete, labelPath("repos/"+owner+"/"+repo+"/labels", labelName), nil)
+}
+
+// labelPath escapes the name: label 名には空白や : や / が入る｡
+func labelPath(prefix, labelName string) string {
+	return prefix + "/" + url.PathEscape(labelName)
 }
 
 // CreateVariable creates the Actions variable name.

@@ -1,0 +1,6 @@
+labels:
+  bug:
+    color: "d73a4a"
+    description: Something isn't working
+  "priority: low":
+    color: "fbca04"

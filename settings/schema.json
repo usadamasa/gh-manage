@@ -33,7 +33,13 @@
       }
     },
     "secrets": { "$ref": "#/definitions/secrets" },
-    "dependabot_secrets": { "$ref": "#/definitions/secrets" }
+    "dependabot_secrets": { "$ref": "#/definitions/secrets" },
+    "labels": {
+      "description": "label の名前から label への map。書かなければ label を比べない。",
+      "type": ["object", "null"],
+      "propertyNames": { "minLength": 1 },
+      "additionalProperties": { "$ref": "#/definitions/label" }
+    }
   },
   "definitions": {
     "env_name": {
@@ -68,7 +74,8 @@
         "rulesets": { "type": ["boolean", "null"] },
         "variables": { "type": ["boolean", "null"] },
         "secrets": { "type": ["boolean", "null"] },
-        "dependabot_secrets": { "type": ["boolean", "null"] }
+        "dependabot_secrets": { "type": ["boolean", "null"] },
+        "labels": { "type": ["boolean", "null"] }
       }
     },
     "data": {
@@ -79,7 +86,8 @@
         "rulesets": { "$ref": "#/definitions/data_names" },
         "variables": { "$ref": "#/definitions/data_actions_names" },
         "secrets": { "$ref": "#/definitions/data_actions_names" },
-        "dependabot_secrets": { "$ref": "#/definitions/data_actions_names" }
+        "dependabot_secrets": { "$ref": "#/definitions/data_actions_names" },
+        "labels": { "$ref": "#/definitions/data_names" }
       }
     },
     "data_names": {
@@ -173,6 +181,19 @@
           "description": "rulesets API の parameters をそのまま渡す。",
           "type": ["object", "null"]
         }
+      }
+    },
+    "label": {
+      "description": "issue の label。color は base と overlay を merge した結果に必須。description を省くと空とみなす。",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "description": "# を付けない 6 桁の 16 進。数字だけの色は引用符で囲む。",
+          "type": "string",
+          "pattern": "^[0-9A-Fa-f]{6}$"
+        },
+        "description": { "type": ["string", "null"] }
       }
     },
     "secrets": {

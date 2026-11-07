@@ -1,0 +1,2 @@
+labels_prune:
+  - delete label priority: low
