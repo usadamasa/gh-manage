@@ -55,20 +55,20 @@ labels:
     color: "1d76db"
     description: "Authentication and OAuth"
   "area: ui":
-    color: "5319e7"
+    color: "1d76db"
     description: "gpui window, layout, theming"
   "area: cache":
-    color: "c2e0c6"
+    color: "1d76db"
     description: "Local cache and persistence"
   "area: timeline":
-    color: "5319e7"
+    color: "1d76db"
     description: "Timeline fetching and rendering"
   "area: config":
-    color: "c2e0c6"
+    color: "1d76db"
     description: "Configuration and file locations"
   "area: cost":
-    color: "d4c5f9"
+    color: "1d76db"
     description: "API spend visibility and control"
   "area: tui":
-    color: "5319e7"
+    color: "1d76db"
     description: "Terminal UI mode"
