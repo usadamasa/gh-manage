@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792677819,
-        "narHash": "sha256-lJC+wQ0y3ai0AtfCTdiiEjJcUdYZFBFfgKgnT/VvPO4=",
+        "lastModified": 1793612919,
+        "narHash": "sha256-UQ2uu9sO9yvwZI06hwlt+tGRrkGuau/gRtOJl0GVESI=",
         "owner": "usadamasa",
         "repo": "go-arch-metrics",
-        "rev": "19df3fd899a109096be2efff66dd66d8973203c7",
+        "rev": "8d47fdf7005e58baa9cade59ceb5b90048cd7146",
         "type": "github"
       },
       "original": {
