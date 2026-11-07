@@ -11,7 +11,7 @@ excludeFiles:
 #   domain  internal/config      設定の読み込みと base + overlay の合成
 #           internal/reconcile   plan / apply の差分計算
 #   infra   internal/github      GitHub API クライアント (go-gh はここだけが import する)
-#   shared  internal/log, internal/version
+#   shared  internal/version
 components:
   entry:
     in:
@@ -26,7 +26,6 @@ components:
       - internal/github
   shared:
     in:
-      - internal/log
       - internal/version
 
 vendors:

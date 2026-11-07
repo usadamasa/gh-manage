@@ -58,9 +58,9 @@ linters:
     forbidigo:
       forbid:
         - pattern: '^fmt\.Print.*$'
-          msg: "use internal/log.Logger instead of fmt.Print* for console output"
+          msg: "console output belongs in cmd/ or internal/cli; return values instead"
         - pattern: '^fmt\.Fprint.*\(os\.Stdout'
-          msg: "use internal/log.Logger instead of fmt.Fprint* to os.Stdout"
+          msg: "console output belongs in cmd/ or internal/cli; return values instead"
       analyze-types: true
       exclude-godoc-examples: true
 
@@ -80,14 +80,11 @@ linters:
           - nestif
           - maintidx
           - forbidigo
-      # CLI の入口と log 実装は fmt.Print* を直接使う
+      # 標準出力へ書くのは CLI の入口だけ
       - path: cmd/
         linters:
           - forbidigo
       - path: internal/cli/
-        linters:
-          - forbidigo
-      - path: internal/log/
         linters:
           - forbidigo
 
