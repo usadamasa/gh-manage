@@ -110,6 +110,7 @@ jobs:
           TAGPR_CLIENT_ID: ${{ vars.TAGPR_CLIENT_ID }}
           # 配布する secret の値｡settings の from_env と同じ名前で渡す
           TAGPR_PRIVATE_KEY: ${{ secrets.TAGPR_PRIVATE_KEY }}
+          DEPENDABOT_AUTOMERGE_TOKEN: ${{ secrets.DEPENDABOT_AUTOMERGE_TOKEN }}
           GH_AUTOMATION_TOKEN: ${{ secrets.GH_AUTOMATION_TOKEN }}
         run: |
           if [ ! -f settings/base.yaml ]; then

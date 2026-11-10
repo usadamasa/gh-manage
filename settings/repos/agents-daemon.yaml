@@ -1,5 +1,11 @@
 # yaml-language-server: $schema=../schema.json
 # repository と rulesets は base のまま｡has_projects は base に合わせて off にする (bootstrap の drift 修正)
+# Dependabot の PR を auto-merge する試行で使う PAT。GITHUB_TOKEN のマージでは後続の workflow が起動しないので
+# PAT にする。Dependabot が起こした workflow は Actions secret を読めないので Dependabot secret に置く。
+# 試行はこのリポジトリだけ
+dependabot_secrets:
+  DEPENDABOT_AUTOMERGE_TOKEN:
+    from_env: DEPENDABOT_AUTOMERGE_TOKEN
 labels:
   # tagpr と Dependabot が付ける
   tagpr:
