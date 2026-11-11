@@ -23,9 +23,10 @@
       # nixos-unstable の go_1_27 は 1.27.3 で、net/http の MaxBytesReader のデータ競合 (CVE-2026-97054) と
       # cgo 経由でビルド時に任意コードが実行される cmd/go などの脆弱性 (CVE-2026-97033〜97043) が残る。
       # channel の go_1_27 が 1.27.4 より古いときだけ go.dev の配布バイナリに差し替える (ソースからビルドすると
-      # binary cache に無く、flake を変えた初回の CI で devShell の準備に約 3 分かかる)。Dependabot の nix PR が
-      # 1.27.4 以上の nixpkgs を取り込んだ時点で channel の go_1_27 に戻り、以後のパッチ更新は flake.lock と
-      # 一緒に上がる。戻った後の差し替えの分岐は使われないので、そのとき消す
+      # binary cache に無く、flake を変える PR の CI は main が nix store を保存するまで run ごとに devShell の
+      # 準備に約 3 分かかる)。Dependabot の nix PR が 1.27.4 以上の nixpkgs を取り込んだ時点で channel の
+      # go_1_27 に戻り、以後のパッチ更新は flake.lock と一緒に上がる。戻った後の差し替えの分岐は使われないので、
+      # そのとき消す
       devGo =
         pkgs:
         if pkgs.lib.versionOlder pkgs.go_1_27.version "1.27.4" then
