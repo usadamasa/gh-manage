@@ -8,12 +8,15 @@ runs:
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@v23
 
-    # 保存は job の終わり (post step) に走るので、後の nix-develop が取った devShell も入る
+    # 保存は job の終わり (post step) に走るので、後の nix-develop が取った devShell も入る。
+    # PR の ref に保存した cache は他の PR から読めないので、保存は default branch の run だけにする。
+    # schedule は常に default branch で走るので event 名で拾う
     - name: Restore and save Nix store
       uses: nix-community/cache-nix-action@v7.0.2
       with:
-        primary-key: nix-${{ runner.os }}-${{ hashFiles('**/flake.lock') }}
+        primary-key: nix-${{ runner.os }}-${{ hashFiles('**/flake.lock', '**/flake.nix') }}
         restore-prefixes-first-match: nix-${{ runner.os }}-
+        save: ${{ github.event_name == 'schedule' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         gc-max-store-size: 2G
 
     # devShell の PATH と env を GITHUB_PATH / GITHUB_ENV に書くので、以後の step は素で動く。
