@@ -1,0 +1,31 @@
+name: Nix cache
+
+# setup-nix は default branch の run でだけ nix store を保存する。PR が読める cache をここで作る。
+# 呼び方の理由は actions/setup-nix/README.md
+"on":
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * 1" # 毎週月曜 09:00 JST
+  workflow_dispatch:
+
+# 保存は post step で走るので、途中で止めない
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  save:
+    name: Save Nix store
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: $/actions/setup-nix
