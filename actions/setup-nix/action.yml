@@ -10,7 +10,7 @@ runs:
 
     # 保存は job の終わり (post step) に走るので、後の nix-develop が取った devShell も入る。
     # PR の ref に保存した cache は他の PR から読めないので、保存は default branch の run だけにする。
-    # schedule の payload には repository が無く、schedule は常に default branch で走る
+    # schedule は常に default branch で走るので event 名で拾う
     - name: Restore and save Nix store
       uses: nix-community/cache-nix-action@v7.0.2
       with:

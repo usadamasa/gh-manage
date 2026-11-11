@@ -24,7 +24,8 @@ key が一致しないときは同じ OS の直近の cache を前方一致で�
 保存前の GC で store を 2 GiB までに抑え、devShell は GC root にして残す。
 
 保存するのは default branch の run (`schedule` を含む) が成功したときだけで、PR と `merge_group` の run は戻すだけ。
-GitHub の cache は保存した ref と default branch の分しか読めず、PR の ref に保存しても他の PR からは使えない。
+GitHub の cache は保存した ref・base ref・default branch の分しか読めず、PR の ref に保存しても他の PR からは使えない。
+`flake.nix` か `flake.lock` を変える PR (Dependabot の nix の更新を含む) は、マージされるまで毎回 run で差分を取得し直す。
 
 ### default branch で cache を作る
 
@@ -63,7 +64,7 @@ jobs:
 - CI の `on` に `push` を足す形にしない。CI の `cancel-in-progress` で続けてマージした run が止まると、
   post step の保存も止まる。main でテストと lint を回し直す分も無駄になる
 - `paths` で `flake.*` に絞らない。7 日アクセスの無い cache は GitHub が消し、PR はもう保存しないので、
-  消えた後は次の push か週次の `schedule` で作り直す。key が既にあれば保存は空振りで済む
+  消えた後は次の push か週次の `schedule` で作り直す。保存の前に同じ key を探すので、key が既にあれば保存しない
 - `runs-on` は CI の job と同じ OS にする (key に `runner.os` が入る)
 - merge queue を使うリポジトリも追加の設定は要らない。`merge_group` の run は default branch の cache を戻し、保存しない。
   queue からのマージで `push` が起きて、この workflow が走る
