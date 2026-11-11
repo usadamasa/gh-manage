@@ -1,18 +1,30 @@
 # setup-nix
 
-Nix を入れ、リポジトリの `flake.nix` の default devShell を読み込む。
+Nix を入れ、リポジトリの `flake.nix` の devShell (既定は `default`) を読み込む。
 devShell の PATH と env を `GITHUB_PATH` / `GITHUB_ENV` に書くので、以後の step はツールを素で呼べる。
-ツールの版は呼ぶ側の `flake.lock` で決まる。
+ツールのバージョンは呼ぶ側の `flake.lock` で決まる。
 
 ## 使い方
 
-`actions/checkout` の後に置く。入力は無い。
+`actions/checkout` の後に置く。
 
 ```yaml
 steps:
   - uses: actions/checkout@v7.0.1
   - uses: usadamasa/gh-manage/actions/setup-nix@main
   - run: task test
+```
+
+| input | 既定 | 意味 |
+| --- | --- | --- |
+| `cache` | `true` | `true` のときだけ nix store を cache から戻し、保存する。それ以外の値は cache を使わない |
+| `devshell` | `default` | 読み込む devShell の名前 (`nix develop .#<name>`) |
+
+```yaml
+  - uses: usadamasa/gh-manage/actions/setup-nix@main
+    with:
+      cache: false
+      devshell: lint
 ```
 
 ## Nix store の cache
@@ -22,6 +34,17 @@ devShell の closure を毎 job 落とさないようにする。
 key は `nix-<runner.os>-<flake.lock と flake.nix のハッシュ>` で、どちらかが変わるまで同じ cache を使う。
 key が一致しないときは同じ OS の直近の cache を前方一致で戻し、足りない分だけ取得する。
 保存前の GC で store を 2 GiB までに抑え、devShell は GC root にして残す。
+
+`devshell` を `default` 以外にすると、key は `nix-devshell-<name>-<runner.os>-<ハッシュ>` になり、
+戻すときの前方一致もその devShell の key に限る。
+devShell ごとに store の中身が違うので、同じ key を使い回すと別の devShell の closure を保存・復元することになる。
+`nix-<runner.os>-` で始めないのは、`default` の前方一致に拾われないようにするため。
+
+### cache を止める (`cache: false`)
+
+devShell に自前でビルドする derivation が無く、計測で cache の restore の方が binary cache からの取得より遅いときは、
+`cache: false` にする。restore も保存もしなくなる。
+`cache: false` のリポジトリには、次節の nix-cache.yaml を置かない。
 
 保存するのは default branch の run (`schedule` を含む) が成功したときだけで、PR と `merge_group` の run は戻すだけ。
 GitHub の cache は保存した ref・base ref・default branch の分しか読めず、PR の ref に保存しても他の PR からは使えない。
@@ -66,6 +89,7 @@ jobs:
 - `paths` で `flake.*` に絞らない。7 日アクセスの無い cache は GitHub が消し、PR はもう保存しないので、
   消えた後は次の push か週次の `schedule` で作り直す。保存の前に同じ key を探すので、key が既にあれば保存しない
 - `runs-on` は CI の job と同じ OS にする (key に `runner.os` が入る)
+- CI で `devshell` を渡すなら、この workflow にも同じ `devshell` を渡す。渡さないと main が保存する key と CI が引く key がずれる
 - merge queue を使うリポジトリも追加の設定は要らない。`merge_group` の run は default branch の cache を戻し、保存しない。
   queue からのマージで `push` が起きて、この workflow が走る
 - setup-nix の参照を新しい commit へ進める (`gh actions-lock --relock`) 変更に、この workflow も入れる。

@@ -2,6 +2,16 @@ name: 'Setup Nix devShell'
 description: 'Install Nix and load the flake.nix devShell into the job environment'
 
 # 他のリポジトリからも呼ばれる共有の action。呼び方と cache の挙動は同じディレクトリの README.md
+inputs:
+  cache:
+    description: "'true' のときだけ nix store を cache から戻し、default branch と schedule の run で保存する"
+    required: false
+    default: 'true'
+  devshell:
+    description: 'nix develop で読む devShell の名前 (.#<name>)'
+    required: false
+    default: 'default'
+
 runs:
   using: 'composite'
   steps:
@@ -10,12 +20,14 @@ runs:
 
     # 保存は job の終わり (post step) に走るので、後の nix-develop が取った devShell も入る。
     # PR の ref に保存した cache は他の PR から読めないので、保存は default branch の run だけにする。
-    # schedule は常に default branch で走るので event 名で拾う
+    # schedule は常に default branch で走るので event 名で拾う。
+    # default 以外の devShell は nix-<os>- で始まらない key にして、default の前方一致の restore に拾わせない
     - name: Restore and save Nix store
+      if: inputs.cache == 'true'
       uses: nix-community/cache-nix-action@v7.0.2
       with:
-        primary-key: nix-${{ runner.os }}-${{ hashFiles('**/flake.lock', '**/flake.nix') }}
-        restore-prefixes-first-match: nix-${{ runner.os }}-
+        primary-key: ${{ inputs.devshell == 'default' && format('nix-{0}-', runner.os) || format('nix-devshell-{0}-{1}-', inputs.devshell, runner.os) }}${{ hashFiles('**/flake.lock', '**/flake.nix') }}
+        restore-prefixes-first-match: ${{ inputs.devshell == 'default' && format('nix-{0}-', runner.os) || format('nix-devshell-{0}-{1}-', inputs.devshell, runner.os) }}
         save: ${{ github.event_name == 'schedule' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         gc-max-store-size: 2G
 
@@ -24,4 +36,4 @@ runs:
     - name: Load devShell
       uses: nicknovitski/nix-develop@v1.2.1
       with:
-        arguments: --profile ${{ runner.temp }}/nix-devshell-profile
+        arguments: '.#${{ inputs.devshell }} --profile ${{ runner.temp }}/nix-devshell-profile'
