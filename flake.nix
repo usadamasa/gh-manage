@@ -80,6 +80,10 @@
             ];
             env.GOTOOLCHAIN = "local";
           };
+          # 一時: setup-nix の devshell input の検証用
+          ci-test = pkgs.mkShellNoCC {
+            packages = [ pkgs.hello ];
+          };
         }
       );
     };

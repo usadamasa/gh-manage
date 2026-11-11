@@ -37,6 +37,26 @@ jobs:
 
       - uses: $/actions/verify-actions-lock
 
+  # 一時: setup-nix の input の検証用
+  tmp-setup-nix-no-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: $/actions/setup-nix
+        with:
+          cache: false
+      - run: command -v golangci-lint
+
+  tmp-setup-nix-devshell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: $/actions/setup-nix
+        with:
+          devshell: ci-test
+      - run: command -v hello
+      - run: "! command -v golangci-lint"
+
   # Go と lint のツールは flake.nix の devShell から取る (setup-nix)。
   test:
     name: Test
