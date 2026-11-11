@@ -31,7 +31,7 @@ tasks:
       - golangci-lint run --timeout 5m ./...
       - go-arch-lint check
       - analyze-arch-lint --strict .
-      - analyze-modularity --strict .
+      - analyze-modularity --strict --quiet .
       - task: vulncheck
       - gosec -quiet ./...
 
