@@ -1,3 +1,4 @@
 # yaml-language-server: $schema=../schema.json
 repository:
   visibility: private
+topics: [tier-1]

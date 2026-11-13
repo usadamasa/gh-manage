@@ -4,6 +4,7 @@
 repository:
   description: 'Claude Code global configuration: skills, hooks, CLAUDE.md'
   visibility: private
+topics: [tier-1]
 rulesets:
   main:
     bypass_actors:

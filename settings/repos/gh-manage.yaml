@@ -7,6 +7,7 @@ data:
     - GH_MANAGE_TOKEN
     - WORKBENCH_TOKEN
     - GH_AUTOMATION_TOKEN
+topics: [tier-2]
 labels:
   # 過去の issue に付いている
   chore:

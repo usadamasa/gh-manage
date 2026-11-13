@@ -2,6 +2,7 @@
 repository:
   has_projects: true
   has_discussions: true
+topics: [tier-2]
 rulesets:
   main:
     rules:

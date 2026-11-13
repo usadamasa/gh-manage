@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=../schema.json
 # repository は base のまま｡CI の check 名が ci-status-check でない (validate) ので ruleset は required_status_checks を付けない (live のまま)
+topics: [tier-2]
 rulesets:
   main:
     rules:

@@ -10,6 +10,8 @@ prune:
   labels: true
 # 管理下のリポジトリに必ず付ける topic｡GitHub 側で管理対象を見分ける印で､plan が desired の topics に足す
 managed_topic: gh-managed
+# 各リポジトリの overlay は topics に tier を 1 つ宣言する。
+# tier-1 は積極的に開発する、tier-2 は維持 (依存更新と CI の維持が中心)、tier-3 は放置。
 repository:
   visibility: public
   default_branch: main

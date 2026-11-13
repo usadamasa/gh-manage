@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=../schema.json
 # repository と rulesets は base のまま｡required_status_checks の integration_id は base に合わせて付ける (bootstrap の drift 修正)
+topics: [tier-3]
 labels:
   # Dependabot が付ける
   dependencies:
