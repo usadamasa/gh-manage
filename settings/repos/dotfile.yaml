@@ -2,6 +2,7 @@
 # ruleset は base のまま (required_status_checks の ci-status-check は dotfile#128 で入った PR 用 CI が出す)
 repository:
   description: dotfiles of vim,bash,and more...
+topics: [tier-1]
 labels:
   # Dependabot が付ける
   dependencies:

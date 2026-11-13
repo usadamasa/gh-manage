@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=../schema.json
 # repository は base のまま｡ruleset は required_status_checks を付けない (live のまま)
+topics: [tier-1]
 rulesets:
   main:
     rules:

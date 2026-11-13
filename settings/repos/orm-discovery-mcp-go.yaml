@@ -3,6 +3,7 @@
 # GH_AUTOMATION_TOKEN は update-flake-lock の workflow が PR を作る PAT (private では Dependabot の nix が使えない)
 repository:
   visibility: private
+topics: [tier-1]
 secrets:
   GH_AUTOMATION_TOKEN:
     from_env: GH_AUTOMATION_TOKEN
