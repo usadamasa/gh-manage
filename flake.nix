@@ -75,6 +75,9 @@
               govulncheck
               yamllint
               check-jsonschema
+              # tests/ のスクリプトのテスト
+              bats
+              jq
               # analyze-modularity、analyze-arch-lint、vulncheck。実行時の go・git・go-arch-lint は上の PATH から使う
               go-arch-metrics.packages.${system}.default
             ];

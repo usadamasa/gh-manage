@@ -136,6 +136,40 @@ workflow は `.github/workflows/settings.yaml`｡secret の置き場所と job �
 管理下のリポジトリが共通で使う composite action は `actions/` に置く。
 一覧と呼び方は [actions/README.md](actions/README.md)。`.github/actions/` は gh-manage 自身だけが使う action の置き場。
 
+## PR のラベル同期
+
+`.github/workflows/sync-pr-labels.yaml` は、PR が閉じる issue の種類 (`bug` など) と `area: *` のラベルを
+PR へ写す reusable workflow。fork と dependabot の PR は飛ばす。スクリプト (`scripts/sync-pr-labels.sh`) は
+呼ばれた workflow と同じ commit の gh-manage から取るので、呼び出し側に写さない。
+
+呼び出し側は次の形で置く。呼ばれた workflow は呼び出し側の権限を狭められるだけで広げられないため、
+`permissions` は呼び出し側の job に書く。
+
+```yaml
+# .github/workflows/pr-labels.yaml
+name: pr-labels
+
+"on":
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  sync:
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: write
+    uses: usadamasa/gh-manage/.github/workflows/sync-pr-labels.yaml@main
+    # with:
+    #   copy-pattern: '^(bug|enhancement|area: .+)$'  # 既定は種類と area: *
+```
+
+gh-actions-lock は別リポジトリの reusable workflow を固定しない ([github/gh-actions-lock#179](https://github.com/github/gh-actions-lock/issues/179))。
+呼び出し側の lockfile には `[]` と載るだけなので、`@main` は gh-manage の main へ push した時点で全呼び出し側の実行内容が変わる
+(`@main` の composite action は lockfile の commit で止まるのと違う)。止めたいときは commit SHA で呼ぶ。
+
 ## 開発
 
 ### 前提

@@ -49,6 +49,9 @@ jobs:
       - name: Run tests
         run: go test ./... -race -coverprofile=coverage.out
 
+      - name: Run script tests
+        run: task test:scripts
+
       - name: Upload coverage
         uses: actions/upload-artifact@v7.0.2
         with:

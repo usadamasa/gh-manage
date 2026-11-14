@@ -14,11 +14,14 @@ workflows:
         - 'determinatesystems/nix-installer-action@v23'
         - 'nicknovitski/nix-develop@v1.2.1'
         - 'nix-community/cache-nix-action@v7.0.2'
+    '.github/workflows/pr-labels.yaml': []
     '.github/workflows/settings.yaml':
         - 'actions/checkout@v7.0.1'
         - 'determinatesystems/nix-installer-action@v23'
         - 'nicknovitski/nix-develop@v1.2.1'
         - 'nix-community/cache-nix-action@v7.0.2'
+    '.github/workflows/sync-pr-labels.yaml':
+        - 'actions/checkout@v7.0.1'
     '.github/workflows/vulncheck.yaml':
         - 'actions/checkout@v7.0.1'
         - 'determinatesystems/nix-installer-action@v23'

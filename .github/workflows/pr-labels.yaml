@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+# gh-manage 自身の呼び出し側。同じ commit の reusable workflow を呼ぶ。他のリポジトリの書き方は README の「PR のラベル同期」
+name: pr-labels
+
+"on":
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  sync:
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: write
+    uses: ./.github/workflows/sync-pr-labels.yaml

@@ -21,6 +21,12 @@ tasks:
     desc: Run tests with race detection and coverage
     cmds:
       - go test -race -cover ./...
+      - task: test:scripts
+
+  test:scripts:
+    desc: Run bats tests for scripts/
+    cmds:
+      - bats tests/
 
   lint:
     desc: Run linters and architecture metrics
