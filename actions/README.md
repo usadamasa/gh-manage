@@ -1,6 +1,6 @@
 # actions
 
-他のリポジトリから呼ばれる composite action。gh-manage 自身だけが使う action は `.github/actions/` に置く。
+他のリポジトリから呼ばれる composite action。
 
 | action | 内容 |
 | --- | --- |

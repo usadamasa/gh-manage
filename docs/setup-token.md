@@ -55,6 +55,7 @@ gh-manage リポジトリの Actions secret に置く｡
 | `GH_MANAGE_TOKEN` | 上で作った fine-grained PAT |
 | `TAGPR_PRIVATE_KEY` | 配布する secret の値 (settings の `from_env: TAGPR_PRIVATE_KEY` が参照する) |
 | `GH_AUTOMATION_TOKEN` | 配布する secret の値 (settings の `from_env: GH_AUTOMATION_TOKEN` が参照する)｡作り方は下 |
+| `DEPENDABOT_AUTOMERGE_TOKEN` | 配布する Dependabot secret の値 (settings の `from_env: DEPENDABOT_AUTOMERGE_TOKEN` が参照する)｡Dependabot の PR を auto-merge する PAT |
 
 ```bash
 gh secret set GH_MANAGE_TOKEN --repo usadamasa/gh-manage
@@ -78,7 +79,8 @@ Workflows の権限は付けない｡そのため `.github/workflows/` を書き
 
 `GH_MANAGE_TOKEN` と下の `WORKBENCH_TOKEN` は gh-manage が値を配らないので､`settings/repos/gh-manage.yaml` の
 `data.secrets` に並べてある (plan に未宣言の notice が出ず､消えていれば plan がエラーになる)｡
-`GH_AUTOMATION_TOKEN` も gh-manage 自身へは配らないので､同じく `data.secrets` に並べてある｡
+`GH_AUTOMATION_TOKEN` と `DEPENDABOT_AUTOMERGE_TOKEN` も gh-manage 自身へは配らないので､
+同じく `data.secrets` に並べてある｡
 
 配布する secret の名前を settings に足したら､同じ名前で gh-manage の Actions secret にも値を置く｡
 workflow は secret を同名の環境変数として gh-manage に渡す｡

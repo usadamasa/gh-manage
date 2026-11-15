@@ -15,7 +15,7 @@ gh-manage は､自分 (usadamasa) が保有する GitHub リポジトリの設�
 │   ├── github/         # GitHub REST API クライアント (go-gh)
 │   ├── reconcile/      # desired と live の差分 (plan)
 │   └── version/        # バージョン解決
-├── settings/           # 管理対象の宣言 (base.yaml + repos/<name>.yaml)｡step 3 の snapshot で作る
+├── settings/           # 管理対象の宣言 (base.yaml + repos/<name>.yaml)｡repos/<name>.yaml は snapshot で作る
 ├── docs/               # セットアップ手順
 └── Taskfile.yaml
 ```
@@ -27,7 +27,7 @@ task build    # bin/gh-manage をビルド
 task test     # テスト (race + cover)
 task lint     # yamllint, golangci-lint, go-arch-lint, analyze-*, govulncheck, gosec
 task vulncheck         # govulncheck (symbol)。.github/workflows/vulncheck.yaml が週次でも回す
-task vulncheck:module  # govulncheck (module)。週次で表示だけ (README の「コマンド」)
+task vulncheck:module  # govulncheck (module)。週次で表示だけ (README の「開発」の「コマンド」)
 task metrics  # analyze-modularity でパッケージメトリクス (Ca/Ce/A/I/D) を表示
 task format   # go mod tidy, goimports, go fmt
 task ci       # format + lint + test + build

@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=./schema.json
 # 全リポジトリ共通の設定｡repos/<name>.yaml は base との差分だけを書く (snapshot --minimize)｡
-# 2026-09 の bootstrap は agents-daemon 1 リポジトリから始め､2026-10 に archived と fork を除く 16 リポジトリへ広げた｡
+# 2026-09 の bootstrap は agents-daemon 1 リポジトリから始め､2026-10 に archived と fork を除く全リポジトリへ広げた｡
 # 値は多数派に揃えてあり､外れるリポジトリは overlay に理由を書く｡
 prune:
   rulesets: false
@@ -70,7 +70,7 @@ variables:
 secrets:
   TAGPR_PRIVATE_KEY:
     from_env: TAGPR_PRIVATE_KEY
-# 種類・優先度・epic の軸は全リポジトリで揃える (運用は skill labeling-github-issues)｡area: と tool のラベルは repo ごとに足す
+# 種類・優先度・epic の軸は全リポジトリで揃える (運用は skill github-ops:labeling-github-issues)｡area: と tool のラベルは repo ごとに足す
 labels:
   # 種類
   bug:
