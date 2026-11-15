@@ -134,7 +134,7 @@ workflow は `.github/workflows/settings.yaml`｡secret の置き場所と job �
 ## 共有の composite action
 
 管理下のリポジトリが共通で使う composite action は `actions/` に置く。
-一覧と呼び方は [actions/README.md](actions/README.md)。`.github/actions/` は gh-manage 自身だけが使う action の置き場。
+一覧と呼び方は [actions/README.md](actions/README.md)。
 
 ## PR のラベル同期
 

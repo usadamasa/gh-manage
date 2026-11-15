@@ -46,7 +46,7 @@ linters:
 
     depguard:
       rules:
-        # GitHub API の呼び出しは internal/github に閉じる (後続 step で使う)
+        # GitHub API の呼び出しは internal/github に閉じる
         no-direct-github-client:
           files:
             - "!**/internal/github/**"

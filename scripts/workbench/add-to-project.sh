@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Workbench (usadamasa の Project 5) に未登録の open な issue / PR を追加し､Kind を埋める｡
-# Priority は空のまま残す (空 = 未振り分け)｡手順の背景は skill managing-github-projects の triage｡
+# Priority は空のまま残す (空 = 未振り分け)｡手順の背景は skill github-ops:managing-github-projects の triage｡
 #
 # gh project サブコマンドは使わない｡owner の判定や project view が read:org と read:discussion を
 # 要求するので､GraphQL で必要な項目だけを引き､token の scope を repo と project に抑える｡
