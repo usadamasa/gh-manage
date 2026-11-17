@@ -19,9 +19,8 @@ jobs:
       && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    concurrency:
-      group: sync-pr-labels-${{ github.repository }}-${{ github.event.pull_request.number }}
-      cancel-in-progress: true
+    # concurrency は置かない。同時に届く event で取り消された run が PR に CANCELLED で残る。
+    # スクリプトは実行時の PR を読んでラベルを足すだけなので、同時に走っても結果は変わらない
     # 呼び出し側の job が同じ権限を付けていないと、ここで宣言しても上がらない
     permissions:
       contents: read
