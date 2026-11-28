@@ -48,6 +48,6 @@ task ci       # format + lint + test + build
 
 ## 進め方
 
-- 1 issue = 1 PR｡PR は Draft で作り assignee を usadamasa にする
+- 1 issue = 1 PR
 - TDD: テストを書いて失敗を確認してから実装する
 - 完了報告の前に `task ci` を通す
