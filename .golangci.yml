@@ -1,5 +1,5 @@
 # golangci-lint v2 設定｡
-# アーキテクチャメトリクス (go-arch-metrics:setup) の linter と、go-template の forbidigo を合わせる｡
+# 複雑度と保守性指数のしきい値、GitHub API の呼び出し箇所 (depguard)、標準出力へ書く箇所 (forbidigo) を検査する｡
 version: "2"
 
 linters:
