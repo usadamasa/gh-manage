@@ -77,7 +77,7 @@ flake.lock を上げる workflow (DeterminateSystems/update-flake-lock)｡Depend
 Workflows の権限は付けない｡そのため `.github/workflows/` を書き換える push はできない｡
 配るリポジトリを settings に足したら､PAT の Repository access にも足す｡
 
-`GH_MANAGE_TOKEN` と下の `WORKBENCH_TOKEN` は gh-manage が値を配らないので､`settings/repos/gh-manage.yaml` の
+`GH_MANAGE_TOKEN` は gh-manage が値を配らないので､`settings/repos/gh-manage.yaml` の
 `data.secrets` に並べてある (plan に未宣言の notice が出ず､消えていれば plan がエラーになる)｡
 `GH_AUTOMATION_TOKEN` と `DEPENDABOT_AUTOMERGE_TOKEN` も gh-manage 自身へは配らないので､
 同じく `data.secrets` に並べてある｡
@@ -110,20 +110,3 @@ workflow は `.github/workflows/settings.yaml`｡
 - PR コメントは workflow の `GITHUB_TOKEN` で書く (PAT は使わない)
 - 配布する secret を足したら､workflow の Apply の `env` にも同じ名前で足す
 - `from_env` の variable を足したら､workflow の Plan / Apply / Drift の `env` に `${{ vars.<名前> }}` で足す
-
-## Workbench への自動追加
-
-`.github/workflows/workbench.yaml` が毎時､`scripts/workbench/repos.tsv` のリポジトリから
-Workbench (Project 5) に未登録の open な issue / PR を探して追加し､Kind を埋める｡
-ユーザー所有の Project は fine-grained PAT と `GITHUB_TOKEN` では書けないので､別に classic PAT を置く｡
-
-| Secret | 内容 |
-| --- | --- |
-| `WORKBENCH_TOKEN` | classic PAT｡scope は `repo` (非公開リポジトリの issue を検索する) と `project` |
-
-```bash
-gh secret set WORKBENCH_TOKEN --repo usadamasa/gh-manage
-```
-
-対象リポジトリを足す・外すときは `scripts/workbench/repos.tsv` を直す｡
-手元で対象だけ見るなら `DRY_RUN=1 scripts/workbench/add-to-project.sh`｡
