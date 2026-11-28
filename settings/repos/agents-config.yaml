@@ -64,9 +64,6 @@ labels:
   "area: usage-analysis":
     color: "1d76db"
     description: "token・latency・permission の分析 (analyze-* と関連 skill)"
-  "area: capture":
-    color: "1d76db"
-    description: "画面の撮影と表示 (cleanshot-capture、showing-images-in-rex)"
   "area: setup":
     color: "1d76db"
     description: "task setup/status/clean の symlink、shared/bin への配布、private marketplace"
