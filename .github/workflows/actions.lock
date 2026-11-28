@@ -27,8 +27,6 @@ workflows:
         - 'determinatesystems/nix-installer-action@v23'
         - 'nicknovitski/nix-develop@v1.2.1'
         - 'nix-community/cache-nix-action@v7.0.2'
-    '.github/workflows/workbench.yaml':
-        - 'actions/checkout@v7.0.1'
 dependencies:
     'actions/checkout@v7.0.1':
         ref: 'v7.0.1'
