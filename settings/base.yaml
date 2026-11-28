@@ -70,7 +70,7 @@ variables:
 secrets:
   TAGPR_PRIVATE_KEY:
     from_env: TAGPR_PRIVATE_KEY
-# 種類・優先度・epic の軸は全リポジトリで揃える (運用は skill github-ops:labeling-github-issues)｡area: と tool のラベルは repo ごとに足す
+# 種類・優先度・epic の軸は全リポジトリで揃える。area: と tool のラベルは repo ごとに足す (merge の規則は README の「設定ファイル」)
 labels:
   # 種類
   bug:
